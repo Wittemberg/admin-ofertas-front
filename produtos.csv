@@ -1,0 +1,2 @@
+internal_code,barcode,name,category,price_from,price_to,unit,store_slug,starts_at,ends_at,is_featured
+ARZ002,7891234567891,Arroz 1kg,Mercearia,9.90,5.90,UN,campo-grande,2026-05-16,2026-05-20,true

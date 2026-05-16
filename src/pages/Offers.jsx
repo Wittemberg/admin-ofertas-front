@@ -30,6 +30,9 @@ export default function Offers() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
+        <a href="/" className="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">
+         &larr; Voltar ao Dashboard
+        </a>
         <h1 className="text-2xl font-bold mb-6">Ofertas ({total})</h1>
 
         <input

@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ImportCSV from './pages/ImportCSV'
 import Offers from './pages/Offers'
+import Products from './pages/Products'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/importar" element={<ProtectedRoute><ImportCSV /></ProtectedRoute>} />
           <Route path="/ofertas" element={<ProtectedRoute><Offers /></ProtectedRoute>} />
+          <Route path="/produtos" element={<ProtectedRoute><Products /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
