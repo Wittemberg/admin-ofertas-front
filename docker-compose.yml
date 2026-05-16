@@ -17,7 +17,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 4
 
 networks:
   interna:
