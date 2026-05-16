@@ -6,4 +6,4 @@ dist/
 
 # Ambiente
 .env
-.env.local
+.env.localdist/
