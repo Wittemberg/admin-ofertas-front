@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  admin:
+    image: ghcr.io/wittemberg/admin-ofertas-front:latest
+    networks:
+      - interna
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.admin-ofertas.rule=Host(`admin-ofertas.wrtec.com.br`)"
+        - "traefik.http.routers.admin-ofertas.entrypoints=web"
+        - "traefik.http.services.admin-ofertas.loadbalancer.server.port=80"
+      update_config:
+        order: start-first
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  interna:
+    external: true
