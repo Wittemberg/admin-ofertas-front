@@ -73,6 +73,7 @@ export default function Dashboard() {
             <a href="/produtos"
               className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 text-center font-medium">
               Ver Produtos
+            </a>
             <a href="/filiais"
               className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 text-center font-medium">
               Filiais
