@@ -25,6 +25,7 @@ export default function Dashboard() {
   const logout = () => {
     localStorage.removeItem('token')
     setUser(null)
+    
   }
 
   const cards = [
