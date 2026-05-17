@@ -31,6 +31,7 @@ export default function Dashboard() {
     { label: 'Produtos', value: stats.products, color: 'bg-blue-500' },
     { label: 'Lojas', value: stats.stores, color: 'bg-green-500' },
     { label: 'Ofertas', value: stats.offers, color: 'bg-purple-500' }
+    
   ]
 
   return (
