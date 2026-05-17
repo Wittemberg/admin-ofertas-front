@@ -25,7 +25,6 @@ export default function Dashboard() {
   const logout = () => {
     localStorage.removeItem('token')
     setUser(null)
-    
   }
 
   const cards = [
@@ -74,6 +73,9 @@ export default function Dashboard() {
             <a href="/produtos"
               className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 text-center font-medium">
               Ver Produtos
+            <a href="/filiais"
+              className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 text-center font-medium">
+              Filiais
             </a>
           </div>
         </div>
