@@ -192,6 +192,11 @@ export default function Dashboard() {
             <div className="text-lg">📊</div>
             <div className="text-sm font-medium mt-1">Relatórios</div>
           </a>
+          <a href="/api-keys"
+            className="bg-indigo-50 text-indigo-700 rounded-lg p-4 text-center hover:bg-indigo-100 transition">
+            <div className="text-lg">🔑</div>
+            <div className="text-sm font-medium mt-1">API Keys</div>
+          </a>
           <a href="/importar"
             className="bg-orange-50 text-orange-700 rounded-lg p-4 text-center hover:bg-orange-100 transition">
             <div className="text-lg">📥</div>
