@@ -69,13 +69,16 @@ export default function ApiKeys() {
             <p className="text-sm text-yellow-700 mb-3">
               Esta chave será exibida apenas <strong>uma única vez</strong>. Copie e armazene com segurança.
             </p>
-            <div className="bg-white p-4 rounded border border-yellow-300 font-mono text-sm break-all select-all">
-              {showKey}
+            <div
+              className="bg-white p-4 rounded border border-yellow-300 font-mono text-sm break-all select-all cursor-pointer hover:bg-yellow-50 transition"
+              onClick={() => {
+                navigator.clipboard.writeText(showKey)
+                setShowKey(null)
+              }}
+              title="Clique para copiar">
+              📋 {showKey}
             </div>
-            <button onClick={() => setShowKey(null)}
-              className="mt-3 text-sm text-yellow-800 underline">
-              Já copiei, fechar
-            </button>
+            <p className="text-xs text-green-700 mt-2">👆 Clique na chave acima para copiar automaticamente</p>
           </div>
         )}
 
