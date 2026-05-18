@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getProducts, updateProduct } from '../api/products'
+import { getProducts, updateProduct, uploadProductImage } from '../api/products'
 
 function EditModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -8,9 +8,11 @@ function EditModal({ product, onClose, onSave }) {
     barcode: product?.barcode || '',
     unit: product?.unit || '',
     description: product?.description || '',
+    image_url: product?.image_url || '',
     is_active: product?.is_active ?? true
   })
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -22,6 +24,27 @@ function EditModal({ product, onClose, onSave }) {
       alert('Erro ao salvar produto')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !product?.id) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const res = await uploadProductImage(product.id, file)
+      setForm({ ...form, image_url: res.data.image_url })
+      alert('Imagem enviada com sucesso!')
+    } catch {
+      alert('Erro ao enviar imagem')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -59,6 +82,36 @@ function EditModal({ product, onClose, onSave }) {
             className="w-full p-3 border rounded"
             rows="3" value={form.description}
             onChange={e => setForm({ ...form, description: e.target.value })} />
+
+          {/* Seção de imagem */}
+          {form.image_url && (
+            <div className="border-t pt-3">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
+              <img src={form.image_url} alt="Preview"
+                className="w-32 h-32 object-cover rounded border mb-2" />
+              <input type="file" accept="image/*"
+                onChange={handleUpload}
+                disabled={uploading}
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                  file:rounded-lg file:border-0 file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+              {uploading && <p className="text-sm text-blue-600 mt-1">Enviando...</p>}
+            </div>
+          )}
+
+          {!form.image_url && (
+            <div className="border-t pt-3">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
+              <input type="file" accept="image/*"
+                onChange={handleUpload}
+                disabled={uploading}
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                  file:rounded-lg file:border-0 file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+              {uploading && <p className="text-sm text-blue-600 mt-1">Enviando...</p>}
+            </div>
+          )}
+
           <div className="flex gap-3 justify-end pt-2">
             <button type="button" onClick={onClose}
               className="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">
