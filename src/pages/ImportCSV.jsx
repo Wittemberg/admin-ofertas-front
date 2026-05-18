@@ -2,8 +2,20 @@ import { useState, useRef } from 'react'
 import api from '../api/axios'
 
 const tabs = [
-  { id: 'offers', label: 'Importar Ofertas', endpoint: '/imports/csv', format: 'internal_code,barcode,name,category,price_from,price_to,unit,store_slug,starts_at,ends_at,is_featured\nARZ001,7891234567890,Arroz 5kg,Mercearia,25.90,19.90,UN,campo-grande,2026-05-13,2026-05-20,true' },
-  { id: 'stores', label: 'Importar Filiais', endpoint: '/imports/stores', format: 'name,slug,city,state,address,phone,is_active\nFilial Centro,filial-centro,São Paulo,SP,Rua XV de Novembro 250,(11) 3000-1001,true' }
+  {
+    id: 'offers',
+    label: 'Importar Ofertas',
+    endpoint: '/imports/csv',
+    format: `internal_code,barcode,name,category,price_from,price_to,unit,store_slug,starts_at,ends_at,is_featured
+ARZ001,7891234567890,Arroz 5kg,Mercearia,25.90,19.90,UN,campo-grande,2026-05-13,2026-05-20,true`
+  },
+  {
+    id: 'stores',
+    label: 'Importar Filiais',
+    endpoint: '/imports/stores',
+    format: `name,slug,city,state,address,phone,is_active
+Filial Centro,filial-centro,São Paulo,SP,Rua XV de Novembro 250,(11) 3000-1001,true`
+  }
 ]
 
 export default function ImportCSV() {
@@ -59,7 +71,6 @@ export default function ImportCSV() {
         </a>
         <h1 className="text-2xl font-bold mb-6">Importar CSV</h1>
 
-        {/* Abas */}
         <div className="flex gap-1 mb-6 bg-white rounded-lg p-1 shadow-sm">
           {tabs.map(tab => (
             <button
@@ -76,7 +87,6 @@ export default function ImportCSV() {
           ))}
         </div>
 
-        {/* Drop zone */}
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -102,7 +112,6 @@ export default function ImportCSV() {
           )}
         </div>
 
-        {/* Botão importar */}
         {file && (
           <button onClick={handleUpload} disabled={loading}
             className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
@@ -110,7 +119,6 @@ export default function ImportCSV() {
           </button>
         )}
 
-        {/* Resultado */}
         {result && (
           <div className={`mt-6 p-4 rounded-lg ${
             result.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
@@ -139,7 +147,6 @@ export default function ImportCSV() {
           </div>
         )}
 
-        {/* Formato esperado */}
         <div className="mt-8 bg-white rounded-lg p-6">
           <h2 className="font-semibold mb-3">Formato esperado do CSV</h2>
           <pre className="bg-gray-50 p-3 rounded text-sm overflow-x-auto">{currentTab.format}</pre>
