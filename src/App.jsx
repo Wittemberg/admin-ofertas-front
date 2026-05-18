@@ -7,6 +7,7 @@ import Offers from './pages/Offers'
 import Products from './pages/Products'
 import Stores from './pages/Stores'
 import Categories from './pages/Categories'
+import Reports from './pages/Reports'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -26,6 +27,7 @@ function App() {
           <Route path="/produtos" element={<ProtectedRoute><Products /></ProtectedRoute>} />
           <Route path="/filiais" element={<ProtectedRoute><Stores /></ProtectedRoute>} />
           <Route path="/categorias" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+          <Route path="/relatorios" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
