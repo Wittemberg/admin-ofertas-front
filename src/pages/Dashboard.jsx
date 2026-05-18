@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getProducts } from '../api/products'
 import { getStores } from '../api/stores'
-import { getOffers } from '../api/offers'
 import { getCategories } from '../api/categories'
+import { getOffers } from '../api/offers'
 
 export default function Dashboard() {
   const { user, setUser } = useAuth()
@@ -26,7 +26,6 @@ export default function Dashboard() {
       const categories = categoriesRes.data
       const offers = offersRes.data
 
-      // Extrair dados conforme formato da resposta
       const productList = products.products || []
       const offerList = offers.offers || []
       const categoryList = categories.categories || []
@@ -37,7 +36,6 @@ export default function Dashboard() {
       const totalOffers = offers.total || offerList.length
       const featuredCount = offerList.filter(o => o.is_featured).length
 
-      // Ofertas por loja
       const storeCount = {}
       offerList.forEach(o => {
         const name = o.store?.name || 'Sem loja'
@@ -47,7 +45,6 @@ export default function Dashboard() {
         .map(([store_name, count]) => ({ store_name, count }))
         .sort((a, b) => b.count - a.count)
 
-      // Produtos por categoria
       const catCount = { 'Sem categoria': 0 }
       productList.forEach(p => {
         const name = p.category?.name || 'Sem categoria'
@@ -190,4 +187,22 @@ export default function Dashboard() {
             <div className="text-sm font-medium mt-1">Gerenciar Produtos</div>
           </a>
           <a href="/filiais"
-            className="bg-green-50 text-green-700 rounded-lg p-4 text-center hover:bg-green
+            className="bg-green-50 text-green-700 rounded-lg p-4 text-center hover:bg-green-100 transition">
+            <div className="text-lg">🏪</div>
+            <div className="text-sm font-medium mt-1">Gerenciar Lojas</div>
+          </a>
+          <a href="/categorias"
+            className="bg-yellow-50 text-yellow-700 rounded-lg p-4 text-center hover:bg-yellow-100 transition">
+            <div className="text-lg">📁</div>
+            <div className="text-sm font-medium mt-1">Gerenciar Categorias</div>
+          </a>
+          <a href="/ofertas"
+            className="bg-purple-50 text-purple-700 rounded-lg p-4 text-center hover:bg-purple-100 transition">
+            <div className="text-lg">🏷️</div>
+            <div className="text-sm font-medium mt-1">Gerenciar Ofertas</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
