@@ -29,6 +29,18 @@ export default function SuperAdminConfig() {
     loadConfigs()
   }, [])
 
+  if (user?.role !== 'superadmin') {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <div className="text-4xl mb-4">🔒</div>
+          <h2 className="text-xl font-bold text-red-600 mb-2">Acesso Restrito</h2>
+          <p className="text-gray-500">Apenas administradores podem acessar esta página.</p>
+        </div>
+      </div>
+    )
+  }
+
   async function loadConfigs() {
     try {
       setLoading(true)
