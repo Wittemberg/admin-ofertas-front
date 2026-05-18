@@ -78,6 +78,10 @@ export default function Dashboard() {
               className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 text-center font-medium">
               Filiais
             </a>
+           <a href="/categorias"
+              className="bg-green-50 text-green-700 p-4 rounded-lg hover:bg-green-100 text-center font-medium">
+              Categorias
+            </a>
           </div>
         </div>
       </main>

@@ -6,6 +6,7 @@ import ImportCSV from './pages/ImportCSV'
 import Offers from './pages/Offers'
 import Products from './pages/Products'
 import Stores from './pages/Stores'
+import Categories from './pages/Categories'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -24,6 +25,7 @@ function App() {
           <Route path="/ofertas" element={<ProtectedRoute><Offers /></ProtectedRoute>} />
           <Route path="/produtos" element={<ProtectedRoute><Products /></ProtectedRoute>} />
           <Route path="/filiais" element={<ProtectedRoute><Stores /></ProtectedRoute>} />
+          <Route path="/categorias" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
