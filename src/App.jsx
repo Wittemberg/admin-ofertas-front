@@ -9,6 +9,7 @@ import Stores from './pages/Stores'
 import Categories from './pages/Categories'
 import Reports from './pages/Reports'
 import ApiKeys from './pages/ApiKeys'
+import TenantSettings from './pages/TenantSettings';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -30,6 +31,7 @@ function App() {
           <Route path="/categorias" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
           <Route path="/relatorios" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
+          <Route path="/configuracoes" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

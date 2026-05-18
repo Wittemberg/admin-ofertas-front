@@ -202,6 +202,11 @@ export default function Dashboard() {
             <div className="text-lg">📥</div>
             <div className="text-sm font-medium mt-1">Importar CSV</div>
           </a>
+          <a href="/configuracoes"
+            className="bg-slate-50 text-slate-700 rounded-lg p-4 text-center hover:bg-slate-100 transition">
+            <div className="text-lg">⚙️</div>
+            <div className="text-sm font-medium mt-1">Configurações</div>
+          </a>
         </div>
       </div>
     </div>
