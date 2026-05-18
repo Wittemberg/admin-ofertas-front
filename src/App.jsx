@@ -10,6 +10,7 @@ import Categories from './pages/Categories'
 import Reports from './pages/Reports'
 import ApiKeys from './pages/ApiKeys'
 import TenantSettings from './pages/TenantSettings';
+import SuperAdminConfig from './pages/SuperAdminConfig'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -32,6 +33,7 @@ function App() {
           <Route path="/relatorios" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
           <Route path="/configuracoes" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
+          <Route path="/super-admin/configuracoes" element={<ProtectedRoute><SuperAdminConfig /></ProtectedRoute>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
