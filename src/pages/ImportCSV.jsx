@@ -15,6 +15,15 @@ ARZ001,7891234567890,Arroz 5kg,Mercearia,25.90,19.90,UN,campo-grande,2026-05-13,
     endpoint: '/imports/stores',
     format: `name,slug,city,state,address,phone,is_active
 Filial Centro,filial-centro,São Paulo,SP,Rua XV de Novembro 250,(11) 3000-1001,true`
+  },
+  {
+    id: 'categories',
+    label: 'Importar Categorias',
+    endpoint: '/imports/categories',
+    format: `name,slug,is_active
+Alimentação,alimentacao,true
+Bebidas,bebidas,true
+Limpeza,limpeza,true`
   }
 ]
 
