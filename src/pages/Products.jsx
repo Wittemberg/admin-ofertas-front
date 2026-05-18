@@ -1,6 +1,22 @@
 import { useState, useEffect } from 'react'
 import { getProducts, updateProduct, uploadProductImage } from '../api/products'
 
+function ImagePreview({ url, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+      onClick={onClose}>
+      <div className="relative" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose}
+          className="absolute -top-3 -right-3 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg text-gray-700 hover:text-gray-900 z-10">
+          ✕
+        </button>
+        <img src={url} alt="Preview"
+          className="max-w-[90vw] max-h-[90vh] rounded-lg shadow-2xl" />
+      </div>
+    </div>
+  )
+}
+
 function EditModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({
     name: product?.name || '',
@@ -30,12 +46,10 @@ function EditModal({ product, onClose, onSave }) {
   const handleUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file || !product?.id) return
-
     if (file.size > 5 * 1024 * 1024) {
       alert('A imagem deve ter no máximo 5MB')
       return
     }
-
     setUploading(true)
     try {
       const res = await uploadProductImage(product.id, file)
@@ -84,33 +98,20 @@ function EditModal({ product, onClose, onSave }) {
             onChange={e => setForm({ ...form, description: e.target.value })} />
 
           {/* Seção de imagem */}
-          {form.image_url && (
-            <div className="border-t pt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
+          <div className="border-t pt-3">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
+            {form.image_url && (
               <img src={form.image_url} alt="Preview"
                 className="w-32 h-32 object-cover rounded border mb-2" />
-              <input type="file" accept="image/*"
-                onChange={handleUpload}
-                disabled={uploading}
-                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-                  file:rounded-lg file:border-0 file:text-sm file:font-semibold
-                  file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-              {uploading && <p className="text-sm text-blue-600 mt-1">Enviando...</p>}
-            </div>
-          )}
-
-          {!form.image_url && (
-            <div className="border-t pt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Imagem do Produto</label>
-              <input type="file" accept="image/*"
-                onChange={handleUpload}
-                disabled={uploading}
-                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-                  file:rounded-lg file:border-0 file:text-sm file:font-semibold
-                  file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-              {uploading && <p className="text-sm text-blue-600 mt-1">Enviando...</p>}
-            </div>
-          )}
+            )}
+            <input type="file" accept="image/*"
+              onChange={handleUpload}
+              disabled={uploading}
+              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                file:rounded-lg file:border-0 file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+            {uploading && <p className="text-sm text-blue-600 mt-1">Enviando...</p>}
+          </div>
 
           <div className="flex gap-3 justify-end pt-2">
             <button type="button" onClick={onClose}
@@ -134,6 +135,7 @@ export default function Products() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [editingProduct, setEditingProduct] = useState(null)
+  const [previewImage, setPreviewImage] = useState(null)
   const limit = 10
 
   const fetchProducts = () => {
@@ -172,6 +174,7 @@ export default function Products() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="text-left p-3 text-sm font-medium text-gray-600">Produto</th>
+                <th className="text-left p-3 text-sm font-medium text-gray-600">Imagem</th>
                 <th className="text-left p-3 text-sm font-medium text-gray-600">Código Interno</th>
                 <th className="text-left p-3 text-sm font-medium text-gray-600">Cód. Barras</th>
                 <th className="text-left p-3 text-sm font-medium text-gray-600">Categoria</th>
@@ -184,6 +187,14 @@ export default function Products() {
               {products.map(product => (
                 <tr key={product.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">{product.name}</td>
+                  <td className="p-3">
+                    {product.image_url
+                      ? <button onClick={() => setPreviewImage(product.image_url)}
+                          className="text-blue-600 hover:text-blue-800 text-sm underline">
+                          🔗 Ver
+                        </button>
+                      : <span className="text-gray-300">—</span>}
+                  </td>
                   <td className="p-3 text-gray-600">{product.internal_code || '-'}</td>
                   <td className="p-3 text-gray-600">{product.barcode || '-'}</td>
                   <td className="p-3 text-gray-600">{product.category?.name || '-'}</td>
@@ -202,7 +213,7 @@ export default function Products() {
                 </tr>
               ))}
               {products.length === 0 && (
-                <tr><td colSpan="7" className="p-6 text-center text-gray-400">Nenhum produto encontrado</td></tr>
+                <tr><td colSpan="8" className="p-6 text-center text-gray-400">Nenhum produto encontrado</td></tr>
               )}
             </tbody>
           </table>
@@ -219,11 +230,20 @@ export default function Products() {
         )}
       </div>
 
+      {/* Modal de edição */}
       {editingProduct && (
         <EditModal
           product={editingProduct}
           onClose={() => setEditingProduct(null)}
           onSave={handleSave}
+        />
+      )}
+
+      {/* Modal de preview de imagem */}
+      {previewImage && (
+        <ImagePreview
+          url={previewImage}
+          onClose={() => setPreviewImage(null)}
         />
       )}
     </div>
