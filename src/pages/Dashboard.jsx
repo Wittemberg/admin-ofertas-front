@@ -86,7 +86,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold">Dashboard</h1>
@@ -100,41 +99,31 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <a href="/produtos"
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
+          <a href="/produtos" className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
             <div className="text-3xl font-bold text-blue-600">{stats.products}</div>
             <div className="text-gray-500 text-sm mt-1">Produtos</div>
           </a>
-          <a href="/filiais"
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
+          <a href="/filiais" className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
             <div className="text-3xl font-bold text-green-600">{stats.stores}</div>
             <div className="text-gray-500 text-sm mt-1">Lojas</div>
           </a>
-          <a href="/categorias"
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
+          <a href="/categorias" className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
             <div className="text-3xl font-bold text-yellow-600">{stats.categories}</div>
             <div className="text-gray-500 text-sm mt-1">Categorias</div>
           </a>
-          <a href="/ofertas"
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
+          <a href="/ofertas" className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
             <div className="text-3xl font-bold text-purple-600">{stats.offers}</div>
             <div className="text-gray-500 text-sm mt-1">Ofertas ativas</div>
             {stats.featuredOffers > 0 && (
-              <div className="text-xs text-yellow-600 mt-1">
-                ★ {stats.featuredOffers} em destaque
-              </div>
+              <div className="text-xs text-yellow-600 mt-1">★ {stats.featuredOffers} em destaque</div>
             )}
           </a>
         </div>
 
-        {/* Gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-          {/* Ofertas por Loja */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">📊 Ofertas por Loja</h2>
+            <h2 className="text-lg font-semibold mb-4">Ofertas por Loja</h2>
             {stats.offersByStore.length === 0 ? (
               <p className="text-gray-400 text-sm">Nenhuma oferta cadastrada</p>
             ) : (
@@ -147,17 +136,15 @@ export default function Dashboard() {
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-3">
                       <div className="bg-blue-500 h-3 rounded-full transition-all"
-                        style={{ width: `${(item.count / maxStoreOffers) * 100}%` }} />
+                        style={{ width: (item.count / maxStoreOffers) * 100 + '%' }} />
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-
-          {/* Produtos por Categoria */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">📦 Produtos por Categoria</h2>
+            <h2 className="text-lg font-semibold mb-4">Produtos por Categoria</h2>
             {stats.productsByCategory.length === 0 ? (
               <p className="text-gray-400 text-sm">Nenhum produto cadastrado</p>
             ) : (
@@ -170,7 +157,7 @@ export default function Dashboard() {
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-3">
                       <div className="bg-emerald-500 h-3 rounded-full transition-all"
-                        style={{ width: `${(item.count / maxCatProducts) * 100}%` }} />
+                        style={{ width: (item.count / maxCatProducts) * 100 + '%' }} />
                     </div>
                   </div>
                 ))}
@@ -179,27 +166,31 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Navegação rápida */}
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <a href="/produtos"
             className="bg-blue-50 text-blue-700 rounded-lg p-4 text-center hover:bg-blue-100 transition">
             <div className="text-lg">📋</div>
-            <div className="text-sm font-medium mt-1">Gerenciar Produtos</div>
+            <div className="text-sm font-medium mt-1">Produtos</div>
           </a>
           <a href="/filiais"
             className="bg-green-50 text-green-700 rounded-lg p-4 text-center hover:bg-green-100 transition">
             <div className="text-lg">🏪</div>
-            <div className="text-sm font-medium mt-1">Gerenciar Lojas</div>
+            <div className="text-sm font-medium mt-1">Lojas</div>
           </a>
           <a href="/categorias"
             className="bg-yellow-50 text-yellow-700 rounded-lg p-4 text-center hover:bg-yellow-100 transition">
             <div className="text-lg">📁</div>
-            <div className="text-sm font-medium mt-1">Gerenciar Categorias</div>
+            <div className="text-sm font-medium mt-1">Categorias</div>
           </a>
           <a href="/ofertas"
             className="bg-purple-50 text-purple-700 rounded-lg p-4 text-center hover:bg-purple-100 transition">
             <div className="text-lg">🏷️</div>
-            <div className="text-sm font-medium mt-1">Gerenciar Ofertas</div>
+            <div className="text-sm font-medium mt-1">Ofertas</div>
+          </a>
+          <a href="/importar"
+            className="bg-orange-50 text-orange-700 rounded-lg p-4 text-center hover:bg-orange-100 transition">
+            <div className="text-lg">📥</div>
+            <div className="text-sm font-medium mt-1">Importar CSV</div>
           </a>
         </div>
       </div>
