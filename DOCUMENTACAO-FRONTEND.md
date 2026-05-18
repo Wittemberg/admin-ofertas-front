@@ -4,7 +4,7 @@
 
 ## 📋 Visão Geral
 
-Administrativo para gestão de produtos, filiais, categorias e ofertas. Consome API do repositório api-ofertas. Importação CSV em lote.
+Painel administrativo para gestão de produtos, filiais, categorias e ofertas. Consome API do repositório api-ofertas. Importação CSV em lote.
 
 ## 🛠️ Stack
 
@@ -20,22 +20,42 @@ Administrativo para gestão de produtos, filiais, categorias e ofertas. Consome 
 
 ## 📁 Estrutura
 
-api/: axios.js | products.js | stores.js | categories.js | offers.js
-context/: AuthContext.jsx
-pages/: Login.jsx | Dashboard.jsx | Products.jsx | Stores.jsx | Categories.jsx | Offers.jsx | ImportCSV.jsx
-Raiz: App.jsx | Dockerfile | nginx.conf | package.json | vite.config.js
+admin-ofertas-front/
+.github/workflows/       CI/CD
+src/api/
+axios.js               Axios + interceptors
+products.js            CRUD produtos
+stores.js              CRUD filiais
+categories.js          CRUD categorias
+offers.js              CRUD ofertas
+src/context/
+AuthContext.jsx        autenticação JWT
+src/pages/
+Login.jsx              tela de login
+Dashboard.jsx          dashboard + navegação
+Products.jsx           CRUD produtos
+Stores.jsx             CRUD filiais
+Categories.jsx         CRUD categorias
+Offers.jsx             listagem ofertas
+ImportCSV.jsx          importação CSV
+src/App.jsx              rotas + ProtectedRoute
+Dockerfile               multi-stage build
+nginx.conf               fallback SPA
+package.json
+vite.config.js
+
 
 ## 🧩 Páginas
 
-- **Login.jsx** — Form + POST /auth/login + JWT
-- **Dashboard.jsx** — Métricas + navegação
-- **Products.jsx** — Tabela + busca + paginação 10 + modal CRUD
-- **Stores.jsx** — Tabela (Nome, Slug, Cidade, Estado, Telefone, Status) + autoslug
-- **Categories.jsx** — Tabela (Nome, Slug, Status) + CRUD
-- **Offers.jsx** — Listagem + filtros
-- **ImportCSV.jsx** — 3 abas (Ofertas/Filiais/Categorias) + drag-drop + feedback
+**Login.jsx** — formulário → POST /auth/login → JWT
+**Dashboard.jsx** — métricas + atalhos
+**Products.jsx** — tabela, busca, paginação 10, modal CRUD
+**Stores.jsx** — tabela (Nome, Slug, Cidade, Estado, Telefone, Status), autoslug
+**Categories.jsx** — tabela (Nome, Slug, Status), CRUD
+**Offers.jsx** — listagem, filtros store/product/featured
+**ImportCSV.jsx** — 3 abas (Ofertas/Filiais/Categorias), drag-drop, feedback
 
-## 🔌 API Layer
+## 🔌 API
 
 axios.js: baseURL + interceptor JWT + handler 401
 Módulos: get / getById / create / update / delete
@@ -46,12 +66,12 @@ AuthContext + ProtectedRoute + localStorage + logout
 
 ## 🐳 Docker
 
-Multi-stage: node:20-alpine (build) -> nginx:alpine (serve)
+Multi-stage: node:20-alpine (build) → nginx:alpine (serve)
 nginx.conf: fallback index.html + cache
 
 ## 🔄 CI/CD
 
-Push main -> GitHub Actions -> ghcr.io -> Portainer -> Swarm
+Push main → GitHub Actions → ghcr.io → Portainer → Swarm
 
 ## 🌐 Deploy
 
