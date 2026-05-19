@@ -8,167 +8,126 @@ Consome API do repositório api-ofertas.
 
 ## Visão Geral
 
-Painel multi-tenant com as seguintes funcionalidades:
-
+Painel multi-tenant com:
 - CRUD completo de produtos, filiais, categorias e ofertas
 - Importação CSV em lote (ofertas, filiais, categorias)
 - Dashboard com métricas e gráficos
 - Exportação de relatórios CSV
 - Gerenciamento de API Keys para integração com ERPs
+- Configurações da Empresa (branding, contato, endereço, redes, horários)
 - Super Admin System — configurações do sistema com auditoria
 
 ---
 
 ## Stack
 
-- **React** ^19.2.6 — Framework UI
-- **Vite** ^8.0.12 — Build tool
-- **TailwindCSS** ^4.3.0 — CSS
-- **React Router DOM** ^7.15.1 — Rotas
-- **Axios** ^1.16.1 — HTTP
-- **@tailwindcss/vite** ^4.3.0 — Plugin Vite
-- **ESLint** ^10.3.0 — Linter
+| Tecnologia | Versão | Função |
+|---|---|---|
+| React | ^19.2.6 | Framework UI |
+| Vite | ^8.0.12 | Build tool |
+| TailwindCSS | ^4.3.0 | CSS |
+| React Router DOM | ^7.15.1 | Rotas |
+| Axios | ^1.16.1 | HTTP |
+| @tailwindcss/vite | ^4.3.0 | Plugin |
+| ESLint | ^10.3.0 | Linter |
 
 ---
 
 ## Páginas
 
-**Login** (`/login` — Login.jsx)
-Formulário de autenticação. Envia POST /auth/login, recebe JWT e armazena no localStorage.
+### Login (`/login` — Login.jsx)
+Formulário de autenticação. Envia `POST /auth/login`, recebe JWT e armazena no localStorage.
 
-**Dashboard** (`/` — Dashboard.jsx)
-Métricas em 4 cards (Produtos, Lojas, Categorias, Ofertas), totalizador de ofertas em destaque, gráfico de barras "Ofertas por Loja", gráfico "Produtos por Categoria", atalhos de navegação para todas as páginas.
+### Dashboard (`/` — Dashboard.jsx)
+Métricas em 4 cards (Produtos, Lojas, Categorias, Ofertas), totalizador de ofertas em destaque, gráficos de barras "Ofertas por Loja" e "Produtos por Categoria", atalhos de navegação.
 
-**Produtos** (`/produtos` — Products.jsx)
-Tabela com busca, paginação de 10 itens e modal de cadastro/edição. Cada produto possui código interno, código de barras (EAN), nome, descrição, imagem, unidade e categoria.
+### Produtos (`/produtos` — Products.jsx)
+Tabela com busca, paginação 10 itens e modal de cadastro/edição. Campos: código interno, EAN, nome, descrição, imagem, unidade, categoria.
 
-**Filiais** (`/filiais` — Stores.jsx)
-Tabela com Nome, Slug, Cidade, Estado, Telefone e Status. Slug gerado automaticamente a partir do nome.
+### Filiais (`/filiais` — Stores.jsx)
+Tabela com Nome, Slug, Cidade, Estado, Telefone, Status. Slug gerado automaticamente.
 
-**Categorias** (`/categorias` — Categories.jsx)
-Tabela com Nome, Slug e Status. CRUD completo.
+### Categorias (`/categorias` — Categories.jsx)
+Tabela com Nome, Slug, Status. CRUD completo.
 
-**Ofertas** (`/ofertas` — Offers.jsx)
+### Ofertas (`/ofertas` — Offers.jsx)
 Listagem com filtros por loja, produto e ofertas em destaque.
 
-**Importar CSV** (`/importar` — ImportCSV.jsx)
-Três abas (Ofertas, Filiais, Categorias) com drag-and-drop, validações e feedback de linhas importadas, puladas, erros e warnings.
+### Importar CSV (`/importar` — ImportCSV.jsx)
+Três abas (Ofertas, Filiais, Categorias) com drag-and-drop, validações e feedback detalhado.
 
-**Relatórios** (`/relatorios` — Reports.jsx)
-Três cards de download CSV: ofertas vigentes, produtos sem oferta ativa e lojas inativas.
+### Relatórios (`/relatorios` — Reports.jsx)
+Três cards de download CSV: ofertas vigentes, produtos sem oferta, lojas inativas.
 
-**API Keys** (`/api-keys` — ApiKeys.jsx)
-Gerenciamento de chaves de integração: criar, listar, revogar e copiar chave para área de transferência.
+### API Keys (`/api-keys` — ApiKeys.jsx)
+Gerenciamento de chaves de integração: criar, listar, revogar e copiar para área de transferência.
 
-**Super Admin** (`/super-admin/configuracoes` — SuperAdminConfig.jsx)
-CRUD de configurações do sistema organizado por categorias: Storage, Database, Geral e Email.
+### Configurações da Empresa (`/configuracoes` — TenantSettings.jsx)
+Seis abas de configuração:
+- **Informações** — Nome, descrição, domínio do site público
+- **Contato** — Telefone, e-mail, WhatsApp
+- **Endereço** — Rua, número, cidade, estado, CEP
+- **Branding** — Upload de logo, paleta de cores (primária, secundária, destaque, fundo, texto), fonte, preview ao vivo do site
+- **Redes Sociais** — Instagram, Facebook, YouTube, TikTok
+- **Horários** — Tabela de dias com abertura/fechamento
+
+### Super Admin — Configurações (`/super-admin/configuracoes` — SuperAdminConfig.jsx)
+CRUD de configurações do sistema organizado por abas: Storage, Database, Geral, Email.
+- Edição inline com salvamento individual
+- Criação de nova configuração
+- Exclusão com confirmação
+- Campos secretos mascarados com toggle
+- Botão "Recarregar Cache"
+- Botão "📋 Auditoria" ao lado das abas
+- Link "← Voltar ao Dashboard"
+- Guard de segurança (role `superadmin`)
+
+### Super Admin — Auditoria (`/super-admin/auditoria` — SuperAdminAudit.jsx)
+Tabela de logs com:
+- Data/Hora, Ação (badge colorido), Entidade, Valor Antigo, Valor Novo, IP
+- Filtros por ação e entidade
+- Paginação
+- Link "← Voltar ao Super Admin"
+- Guard de segurança (role `superadmin`)
 
 ---
 
 ## Super Admin System
 
-### Guard de Segurança
+### Guard de Segurança (duas camadas)
+1. **Rota protegida** — `ProtectedRoute` exige token JWT. Sem token → `/login`.
+2. **Guard interno** — Verifica `user.role === 'superadmin'`. Se falhar → tela "🔒 Acesso Restrito" com link "← Voltar ao Dashboard".
 
-Duas camadas de proteção:
+Usuários role `admin` (ex: `admin@portonovo.com`) **não passam**. Apenas `superadmin` (ex: `superadmim@wrtec.com.br`) acessa.
 
-1. **Rota protegida** — ProtectedRoute exige token JWT válido (usuário logado). Sem token, redireciona para /login.
-2. **Guard de role** — Dentro do componente, verifica se user.role é igual a "superadmin". Caso contrário, renderiza tela de "Acesso Restrito".
+### API Module (`src/api/admin.js`)
+```javascript
+getConfigs()              // GET    /admin/config
+getConfigsByCategory()    // GET    /admin/config/:category
+updateConfig()            // PUT    /admin/config/:category/:key
+createConfig()            // POST   /admin/config
+deleteConfig()            // DELETE /admin/config/:category/:key
+reloadCache()             // POST   /admin/config/reload
 
-O guard é implementado assim no componente:
-if (user?.role !== 'superadmin') {
-return tela de bloqueio com mensagem "Apenas administradores master podem acessar esta página."
-}
+Axios — Configuração (src/api/axios.js)Instância Axios com baseURL via env, interceptor de request que injeta token JWT do localStorage, interceptor de response que trata 401 (remove token e redireciona para /login).
 
+Componente = FunçãoAuthContext.jsxProvider carrega user via GET /auth/me ao montar
+useAuth() = Hook: { user, setUser, loading }
+ProtectedRoute = Envolve rotas privadas, redireciona para /login
+localStorage = Token armazenado como 'token'
+ = LogoutRemove token + limpa estado
 
-Usuários com role "admin" (como admin@portonovo.com) não passam — veem apenas a tela de bloqueio. Apenas role "superadmin" (ex: superadmim@wrtec.com.br) tem acesso ao conteúdo.
+Docker
 
-### Funcionalidades da Tela
+Multi-stage: node:20-alpine (builder) → nginx:alpine (serve). nginx.conf com fallback index.html para SPA routing + cache de assets estáticos.
 
-- **Abas por categoria** — Storage, Database, Geral, Email
-- **Listagem** — Tabela com key, valor editável e badge de campo secreto
-- **Edição inline** — Input textual com botão "Salvar" individual por registro
-- **Exclusão** — Botão de lixeira com confirmação via confirm()
-- **Criação** — Formulário com campos: categoria (select), key, valor, is_secret (checkbox) e descrição
-- **Cache** — Botão "Recarregar Cache" que chama POST /admin/config/reload
-- **Campos secretos** — Exibem "••••••••" com toggle de olho para revelar/ocultar
+CI/CD
 
-### API Module (src/api/admin.js)
+Push main → GitHub Actions → build Docker → push ghcr.io/wittemberg/admin-ofertas-front:latest → webhook Portainer → redeploy Swarm
 
-getConfigs()              -> GET    /admin/config
-getConfigsByCategory()    -> GET    /admin/config/:category
-updateConfig()            -> PUT    /admin/config/:category/:key
-createConfig()            -> POST   /admin/config
-deleteConfig()            -> DELETE /admin/config/:category/:key
-reloadCache()             -> POST   /admin/config/reload
+Deploy
+Orquestração = Docker Swarm
+Proxy = Traefik + Let's Encrypt
+URL = https://admin-ofertas.wrtec.com.br
 
-
----
-
-## API — Configuração (src/api/axios.js)
-
-Instância Axios com:
-
-- baseURL apontando para a URL da API (definida via variável de ambiente)
-- Interceptor de request que injeta o token JWT do localStorage no header Authorization
-- Interceptor de response que trata 401 automaticamente (remove token e redireciona para /login)
-
-Módulos de API organizados por domínio: auth.js, admin.js e CRUDs específicos de cada entidade.
-
----
-
-## Autenticação
-
-**AuthContext.jsx** — Provider que carrega os dados do usuário via GET /auth/me ao montar a aplicação. Se o token existir no localStorage, faz a requisição e armazena o usuário no estado. Se falhar (token inválido/expirado), remove o token.
-
-**useAuth()** — Hook que retorna { user, setUser, loading }.
-
-**ProtectedRoute** — Componente wrapper que envolve rotas privadas. Verifica se user existe. Se não, redireciona para /login.
-
-**localStorage** — Token JWT armazenado na chave "token".
-
-**Logout** — Remove token do localStorage e limpa o estado user.
-
----
-
-## Docker
-
-Build multi-stage em duas etapas:
-
-Etapa 1 (builder): node:20-alpine
-Copia todo o código
-Executa npm install
-Executa npm run build (gera pasta dist/)
-Etapa 2 (serving): nginx:alpine
-Copia a pasta dist/ da etapa anterior para /usr/share/nginx/html
-Copia nginx.conf personalizado para /etc/nginx/conf.d/default.conf
-
-
-O nginx.conf possui fallback para index.html (necessário para SPA routing com React Router) e configuração de cache para assets estáticos.
-
----
-
-## CI/CD
-
-Push na branch main
--> GitHub Actions detecta o push
--> Build da imagem Docker (Dockerfile multi-stage)
--> Push da imagem para ghcr.io/wittemberg/admin-ofertas-front:latest
--> Webhook disparado para o Portainer
--> Portainer faz pull da nova imagem e redeploy no Docker Swarm
-
-
----
-
-## Deploy
-
-- **Orquestração:** Docker Swarm
-- **Proxy reverso:** Traefik com certificado Let's Encrypt
-- **URL:** https://admin-ofertas.wrtec.com.br
-
----
-
-## Histórico de Versões
-
-- **18/05/2026** — Documentação inicial gerada
-- **19/05/2026** — Adicionado Super Admin System, guard de role superadmin, rota /super-admin/configuracoes e src/api/admin.js
-
+Documentação gerada em 19/05/2026.
