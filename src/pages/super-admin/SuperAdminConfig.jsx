@@ -48,7 +48,6 @@ export default function SuperAdminConfig() {
           ← Voltar ao Dashboard
         </a>
         </div>
-        </div>
       </div>
     )
   }

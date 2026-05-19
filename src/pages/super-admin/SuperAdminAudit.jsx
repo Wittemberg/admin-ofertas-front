@@ -40,7 +40,6 @@ export default function SuperAdminAudit() {
           ← Voltar ao Dashboard
         </a>
         </div>
-        </div>
       </div>
     )
   }
