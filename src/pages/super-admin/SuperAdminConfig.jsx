@@ -44,11 +44,14 @@ export default function SuperAdminConfig() {
           <div className="text-4xl mb-4">🔒</div>
           <h2 className="text-xl font-bold text-red-600 mb-2">Acesso Restrito</h2>
           <p className="text-gray-500">Apenas administradores master podem acessar esta página.</p>
+          <a href="/" className="mt-4 text-blue-600 hover:text-blue-800 text-sm inline-block">
+          ← Voltar ao Dashboard
+        </a>
+        </div>
         </div>
       </div>
     )
   }
-
   async function loadConfigs() {
     try {
       setLoading(true)
