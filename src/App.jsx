@@ -35,7 +35,7 @@ function App() {
           <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
           <Route path="/configuracoes" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
           <Route path="/super-admin/configuracoes" element={<ProtectedRoute><SuperAdminConfig /></ProtectedRoute>} />
-          <Route path="/super-admin/auditoria" element={<ProtectedRoute><SuperAdminAudit />} /></ProtectedRoute>
+          <Route path="/super-admin/auditoria" element={<ProtectedRoute><SuperAdminAudit /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
