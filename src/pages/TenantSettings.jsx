@@ -159,6 +159,9 @@ export default function TenantSettings() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
+        <a href="/" className="text-blue-600 hover:text-blue-800 text-sm mb-4 inline-block">
+          ← Voltar ao Dashboard
+        </a>  
         <h1 className="text-2xl font-bold mb-6">⚙️ Configurações da Empresa</h1>
 
         {message && (

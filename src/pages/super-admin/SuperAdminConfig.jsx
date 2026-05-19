@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { getConfigs, updateConfig, createConfig, deleteConfig, reloadCache } from '../../api/admin'
 
@@ -29,7 +30,8 @@ export default function SuperAdminConfig() {
   const [newConfig, setNewConfig] = useState({
     category: 'storage', key: '', value: '', is_secret: false, description: ''
   })
-
+  const navigate = useNavigate()
+  
   useEffect(() => { loadConfigs() }, [])
 
   // ═══════════════════════════════════════════════════════════
@@ -125,6 +127,9 @@ export default function SuperAdminConfig() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-5xl mx-auto">
+        <a href="/" className="text-blue-600 hover:text-blue-800 text-sm mb-4 inline-block block">
+          ← Voltar ao Dashboard
+        </a>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">🔐 Super Admin</h1>
@@ -164,6 +169,11 @@ export default function SuperAdminConfig() {
               </span>
             </button>
           ))}
+            {/* Botão de Auditoria — ao lado das abas */}
+              <button onClick={() => navigate('/super-admin/auditoria')}
+              className="px-5 py-3 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-purple-600 text-white hover:bg-purple-700 shadow ml-auto">
+              📋 Auditoria
+            </button>
         </div>
 
         {/* Card de configurações */}
