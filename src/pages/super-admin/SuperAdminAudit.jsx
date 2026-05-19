@@ -75,6 +75,9 @@ export default function SuperAdminAudit() {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
+        <a href="/super-admin/configuracoes" className="text-blue-600 hover:text-blue-800 text-sm mb-4 inline-block">
+          ← Voltar ao Super Admin
+        </a>  
         <div className="mb-6">
           <h1 className="text-2xl font-bold">📋 Auditoria</h1>
           <p className="text-sm text-gray-500">
