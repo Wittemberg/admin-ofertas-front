@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../context/AuthContext'
-import { getAuditLogs } from '../api/admin'
+import { useAuth } from '../../context/AuthContext'
+import { getAuditLogs } from '../../api/admin'
 
 const ACTION_LABELS = {
   create_config: '➕ Criou',

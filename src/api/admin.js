@@ -13,3 +13,5 @@ export const deleteConfig = (category, key) =>
   api.delete(`/admin/config/${category}/${key}`)
 
 export const reloadCache = () => api.post('/admin/config/reload')
+
+export const getAuditLogs = (params) => api.get('/admin/audit', { params })
