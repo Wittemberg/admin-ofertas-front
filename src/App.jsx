@@ -12,6 +12,7 @@ import ApiKeys from './pages/ApiKeys'
 import TenantSettings from './pages/TenantSettings';
 import SuperAdminConfig from './pages/SuperAdminConfig'
 
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="p-8 text-center">Carregando...</div>
@@ -34,6 +35,7 @@ function App() {
           <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
           <Route path="/configuracoes" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
           <Route path="/super-admin/configuracoes" element={<ProtectedRoute><SuperAdminConfig /></ProtectedRoute>} />
+          
         </Routes>
       </AuthProvider>
     </BrowserRouter>
