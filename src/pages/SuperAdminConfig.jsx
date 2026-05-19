@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { getConfigs, updateConfig, createConfig, deleteConfig, reloadCache } from '../api/admin'
 
 const CATEGORIES = [
-  { id: 'storage', label: '💾 Storage', icon: '💾', desc: 'S3 / MinIO' },
+  { id: 'storage',  label: '💾 Storage', icon: '💾', desc: 'S3 / MinIO' },
   { id: 'database', label: '🗄️ Database', icon: '🗄️', desc: 'PostgreSQL' },
-  { id: 'geral', label: '⚙️ Geral', icon: '⚙️', desc: 'Aplicação' },
-  { id: 'email', label: '📧 Email', icon: '📧', desc: 'SMTP' }
+  { id: 'geral',    label: '⚙️ Geral',    icon: '⚙️', desc: 'Aplicação' },
+  { id: 'email',    label: '📧 Email',    icon: '📧', desc: 'SMTP' }
 ]
 
 const CATEGORY_NAMES = {
-  storage: 'Storage (S3 / MinIO)',
+  storage:  'Storage (S3 / MinIO)',
   database: 'Database',
-  geral: 'Geral',
-  email: 'Email'
+  geral:    'Geral',
+  email:    'Email'
 }
 
 export default function SuperAdminConfig() {
+  const { user } = useAuth()
+
   const [activeCategory, setActiveCategory] = useState('storage')
   const [configs, setConfigs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,19 +26,22 @@ export default function SuperAdminConfig() {
   const [message, setMessage] = useState(null)
   const [editValues, setEditValues] = useState({})
   const [showCreate, setShowCreate] = useState(false)
-  const [newConfig, setNewConfig] = useState({ category: 'storage', key: '', value: '', is_secret: false, description: '' })
+  const [newConfig, setNewConfig] = useState({
+    category: 'storage', key: '', value: '', is_secret: false, description: ''
+  })
 
-  useEffect(() => {
-    loadConfigs()
-  }, [])
+  useEffect(() => { loadConfigs() }, [])
 
+  // ═══════════════════════════════════════════════════════════
+  // BLOQUEIO DE SEGURANÇA — só superadmin passa daqui
+  // ═══════════════════════════════════════════════════════════
   if (user?.role !== 'superadmin') {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow text-center">
           <div className="text-4xl mb-4">🔒</div>
           <h2 className="text-xl font-bold text-red-600 mb-2">Acesso Restrito</h2>
-          <p className="text-gray-500">Apenas administradores podem acessar esta página.</p>
+          <p className="text-gray-500">Apenas administradores master podem acessar esta página.</p>
         </div>
       </div>
     )
@@ -273,8 +279,7 @@ export default function SuperAdminConfig() {
         {/* Info de fallback */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
           <strong>🔗 Chain de resolução:</strong> Banco <code className="bg-blue-100 px-1 rounded">system_configs</code> →
-          Env vars <code className="bg-blue-100 px-1 rounded">STORAGE_ENDPOINT</code> →
-          Hardcoded fallback no código
+          Env vars <code className="bg-blue-100 px-1 rounded">STORAGE_ENDPOINT</code> → Hardcoded fallback no código
           <br />
           <span className="text-xs text-blue-600">Para trocar de MinIO para S3: basta atualizar os valores e clicar em "Recarregar Cache". Nenhum rebuild necessário.</span>
         </div>
