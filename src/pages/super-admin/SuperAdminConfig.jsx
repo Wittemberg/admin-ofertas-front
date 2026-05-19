@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../context/AuthContext'
-import { getConfigs, updateConfig, createConfig, deleteConfig, reloadCache } from '../api/admin'
+import { useAuth } from '../../context/AuthContext'
+import { getConfigs, updateConfig, createConfig, deleteConfig, reloadCache } from '../../api/admin'
 
 const CATEGORIES = [
   { id: 'storage',  label: '💾 Storage', icon: '💾', desc: 'S3 / MinIO' },
