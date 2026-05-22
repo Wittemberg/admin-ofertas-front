@@ -99,7 +99,7 @@ function SitePreview({ colors, logoUrl }) {
                 </p>
                 <p className="text-sm text-slate-500">Oferta especial</p>
                 <p className="text-lg font-bold text-[var(--brand-secondary)]">
-                  `R$ ${item === 1 ? '99,90' : '149,90'}`
+                  {item === 1 ? 'R$ 99,90' : 'R$ 149,90'}
                 </p>
               </div>
             </div>
@@ -110,7 +110,7 @@ function SitePreview({ colors, logoUrl }) {
   )
 }
 
-function BrandingUpload() {
+export default function BrandingUpload() {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [logoUrl, setLogoUrl] = useState(null)
@@ -263,24 +263,22 @@ function BrandingUpload() {
     : 'Arraste sua logo aqui ou clique para selecionar'
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Branding automático
-        </h1>
-        <p className="mt-2 text-sm text-slate-600">
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-slate-900">Branding</h2>
+        <p className="mt-1 text-sm text-slate-500">
           Envie a logomarca do tenant para extrair a paleta de cores e visualizar
           o resultado antes de aplicar.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold text-slate-900">
                 Upload da logo
-              </h2>
+              </h3>
               <p className="mt-1 text-sm text-slate-500">
                 Formatos aceitos: PNG, JPG, SVG e WebP. Tamanho máximo: 2MB.
               </p>
@@ -345,7 +343,7 @@ function BrandingUpload() {
                 disabled={!file || extracting}
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
-                {extracting ? 'Extraindo...' : 'Extrair Cores Automaticamente'}
+                {extracting ? 'Extraindo...' : 'Extrair cores automaticamente'}
               </button>
 
               <button
@@ -353,7 +351,7 @@ function BrandingUpload() {
                 disabled={!logoUrl || extracting || applying}
                 className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
-                {applying ? 'Aplicando...' : 'Aplicar Cores'}
+                {applying ? 'Aplicando...' : 'Aplicar cores'}
               </button>
 
               <button
@@ -373,9 +371,9 @@ function BrandingUpload() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold text-slate-900">
                 Cores extraídas
-              </h2>
+              </h3>
               <p className="mt-1 text-sm text-slate-500">
                 Revise a paleta sugerida antes de aplicar no tenant.
               </p>
@@ -393,9 +391,9 @@ function BrandingUpload() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900">
               Preview visual
-            </h2>
+            </h3>
             <p className="mt-1 text-sm text-slate-500">
               Simulação do frontend público usando a identidade visual extraída.
             </p>
@@ -407,5 +405,3 @@ function BrandingUpload() {
     </div>
   )
 }
-
-export default BrandingUpload
