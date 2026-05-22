@@ -91,47 +91,45 @@ const BrandingUpload = () => {
   }, []);
 
   const handleExtractColors = async () => {
-    if (!file) return;
-    setError('');
-    setStatusMessage('');
-    setExtracting(true);
-    setColors(DEFAULT_COLORS);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const uploadResult = await uploadTenantBranding(formData);
-      const jobId = uploadResult.jobId;
-      setLogoUrl(uploadResult.logoUrl);
-
-      let attempts = 0;
-      const poll = async () => {
-        attempts++;
-        try {
-          const statusResult = await getBrandingStatus(jobId);
-          if (statusResult.status === 'completed') {
-            setColors(statusResult.colors);
-            setExtracting(false);
-            setStatusMessage('Cores extraídas com sucesso!');
-          } else if (statusResult.status === 'failed') {
-            setExtracting(false);
-            setError('Falha na extração. Usando paleta padrão.');
-          } else if (attempts >= 15) {
-            setExtracting(false);
-            setError('Tempo limite excedido. Usando paleta padrão.');
-          } else {
-            pollRef.current = setTimeout(poll, 2000);
-          }
-        } catch (pollErr) {
+  if (!file) return;
+  setError('');
+  setStatusMessage('');
+  setExtracting(true);
+  setColors(DEFAULT_COLORS);
+  try {
+    const { data } = await uploadTenantBranding(file);
+    const jobId = data.job_id;
+    const logoUrl = data.logo_url;
+    let attempts = 0;
+    const poll = async () => {
+      attempts++;
+      try {
+        const { data: job } = await getBrandingStatus(jobId);  // ← CORRIGIDO
+        if (job.status === 'completed') {
+          setColors(job.colors);
+          setLogoUrl(job.logo_url);    // ← opcional se quiser salvar a URL final
           setExtracting(false);
-          setError('Erro no polling: ' + pollErr.message);
+          setStatusMessage('Cores extraídas com sucesso!');
+        } else if (job.status === 'failed') {
+          setExtracting(false);
+          setError('Falha na extração. Usando paleta padrão.');
+        } else if (attempts >= 15) {
+          setExtracting(false);
+          setError('Tempo limite excedido. Usando paleta padrão.');
+        } else {
+          pollRef.current = setTimeout(poll, 2000);
         }
-      };
-      poll();
-    } catch (uploadErr) {
-      setExtracting(false);
-      setError('Erro no upload: ' + uploadErr.message);
-    }
-  };
+      } catch (pollErr) {
+        setExtracting(false);
+        setError('Erro no polling: ' + pollErr.message);
+      }
+    };
+    poll();
+  } catch (uploadErr) {
+    setExtracting(false);
+    setError('Erro no upload: ' + uploadErr.message);
+  }
+};
 
   const handleApplyColors = async () => {
     try {

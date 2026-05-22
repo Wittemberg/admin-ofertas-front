@@ -16,13 +16,13 @@ export const uploadTenantLogo = (file) => {
   });
 };
 
-export const uploadTenantBranding = (file) => {
-  const formData = new FormData();
-  formData.append('branding', file);
-  return axios.post('/auth/tenant/branding', formData, {
+export const uploadTenantBranding = async (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return api.post('/auth/tenant/branding', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  });
-};
+  })
+}
 
 export const getBrandingStatus = (jobId) => {
   return axios.get(`/auth/tenant/branding/status/${jobId}`);
