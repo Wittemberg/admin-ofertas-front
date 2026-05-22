@@ -132,13 +132,20 @@ const BrandingUpload = () => {
 };
 
   const handleApplyColors = async () => {
-    try {
-      await updateTenantSettings({ colors, logoUrl });
-      setStatusMessage('Configurações aplicadas com sucesso!');
-    } catch (err) {
-      setError('Erro ao aplicar: ' + err.message);
-    }
-  };
+  try {
+    await updateTenantSettings({
+      logo_url: logoUrl,
+      primary_color: colors.primary,
+      secondary_color: colors.secondary,
+      accent_color: colors.accent,
+      background_color: colors.background,
+      text_color: colors.text
+    });
+    setStatusMessage('Configurações aplicadas com sucesso!');
+  } catch (err) {
+    setError('Erro ao aplicar: ' + err.message);
+  }
+};
 
   useEffect(() => {
     return () => {
