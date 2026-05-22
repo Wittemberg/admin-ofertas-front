@@ -12,6 +12,7 @@ import ApiKeys from './pages/ApiKeys'
 import TenantSettings from './pages/TenantSettings';
 import SuperAdminConfig from './pages/super-admin/SuperAdminConfig'
 import SuperAdminAudit from './pages/super-admin/SuperAdminAudit'
+import BrandingUpload from './pages/BrandingUpload' // ← NOVO
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -36,7 +37,7 @@ function App() {
           <Route path="/configuracoes" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
           <Route path="/super-admin/configuracoes" element={<ProtectedRoute><SuperAdminConfig /></ProtectedRoute>} />
           <Route path="/super-admin/auditoria" element={<ProtectedRoute><SuperAdminAudit /></ProtectedRoute>} />
-
+          <Route path="/branding" element={<ProtectedRoute><BrandingUpload /></ProtectedRoute>} /> {/* ← NOVO */}
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </AuthProvider>
