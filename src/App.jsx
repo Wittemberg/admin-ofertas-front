@@ -9,11 +9,9 @@ import Stores from './pages/Stores'
 import Categories from './pages/Categories'
 import Reports from './pages/Reports'
 import ApiKeys from './pages/ApiKeys'
-import TenantSettings from './pages/TenantSettings';
+import TenantSettings from './pages/TenantSettings'
 import SuperAdminConfig from './pages/super-admin/SuperAdminConfig'
 import SuperAdminAudit from './pages/super-admin/SuperAdminAudit'
-import BrandingUpload from './pages/BrandingUpload' // ← NOVO
-import Configuracoes from './pages/Configuracoes'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -35,11 +33,18 @@ function App() {
           <Route path="/categorias" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
           <Route path="/relatorios" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
+          
+          {/* Rota canônica de configurações */}
           <Route path="/configuracoes" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
+          
+          {/* Redirecionamentos legados de branding para a aba correta */}
+          <Route path="/branding" element={<Navigate to="/configuracoes?tab=branding" replace />} />
+          <Route path="/branding/" element={<Navigate to="/configuracoes?tab=branding" replace />} />
+          
+          {/* Super Admin */}
           <Route path="/super-admin/configuracoes" element={<ProtectedRoute><SuperAdminConfig /></ProtectedRoute>} />
           <Route path="/super-admin/auditoria" element={<ProtectedRoute><SuperAdminAudit /></ProtectedRoute>} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/branding" element={<Navigate to="/configuracoes?tab=branding" replace />}/>
+          
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </AuthProvider>

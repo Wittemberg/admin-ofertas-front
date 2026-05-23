@@ -1,18 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
-import {
-  uploadTenantBranding,
-  getBrandingStatus,
-  updateTenantSettings
-} from '../api/tenant'
+import { uploadTenantBranding, getBrandingStatus, updateTenantSettings } from '../api/tenant'
 
-const ALLOWED_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/svg+xml',
-  'image/webp'
-]
-
+const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp']
 const MAX_SIZE = 2 * 1024 * 1024
 
 const DEFAULT_COLORS = {
@@ -39,66 +28,47 @@ function ColorRow({ label, color }) {
 }
 
 function SitePreview({ colors, logoUrl }) {
-  const previewVars = useMemo(
-    () => ({
-      '--brand-primary': colors.primary,
-      '--brand-secondary': colors.secondary,
-      '--brand-accent': colors.accent,
-      '--brand-background': colors.background,
-      '--brand-text': colors.text
-    }),
-    [colors]
-  )
+  const previewVars = useMemo(() => ({
+    '--brand-primary': colors.primary,
+    '--brand-secondary': colors.secondary,
+    '--brand-accent': colors.accent,
+    '--brand-background': colors.background,
+    '--brand-text': colors.text
+  }), [colors])
 
   return (
-    <div
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-      style={previewVars}
-    >
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" style={previewVars}>
       <div className="bg-[var(--brand-primary)] px-5 py-4">
         <div className="flex items-center gap-3">
           {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt="Logo"
-              className="h-10 w-auto rounded bg-white p-1"
-            />
+            <img src={logoUrl} alt="Logo" className="h-10 w-auto rounded bg-white p-1" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded bg-white text-xs font-semibold text-slate-500">
               LOGO
             </div>
           )}
-
           <div>
-            <p className="text-sm text-white/80">Preview do site</p>
-            <h3 className="text-lg font-semibold text-white">Minha Loja</h3>
+            <p className="text-xs text-white/80">Preview do site</p>
+            <h3 className="text-base font-semibold text-white">Minha Loja</h3>
           </div>
         </div>
       </div>
 
       <div className="bg-[var(--brand-background)] p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="text-base font-semibold text-[var(--brand-text)]">
-            Ofertas em destaque
-          </h4>
-          <span className="rounded-full bg-[var(--brand-secondary)] px-3 py-1 text-xs font-semibold text-white">
+          <h4 className="text-sm font-semibold text-[var(--brand-text)]">Ofertas em destaque</h4>
+          <span className="rounded-full bg-[var(--brand-secondary)] px-2 py-0.5 text-xs font-semibold text-white">
             Semana
           </span>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-2">
           {[1, 2].map((item) => (
-            <div
-              key={item}
-              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-            >
-              <div className="bg-[var(--brand-accent)] p-6" />
-              <div className="space-y-2 p-4">
-                <p className="font-semibold text-[var(--brand-text)]">
-                  Produto {item}
-                </p>
-                <p className="text-sm text-slate-500">Oferta especial</p>
-                <p className="text-lg font-bold text-[var(--brand-secondary)]">
+            <div key={item} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="bg-[var(--brand-accent)] p-4" />
+              <div className="space-y-1 p-3">
+                <p className="text-xs font-semibold text-[var(--brand-text)]">Produto {item}</p>
+                <p className="text-sm font-bold text-[var(--brand-secondary)]">
                   {item === 1 ? 'R$ 99,90' : 'R$ 149,90'}
                 </p>
               </div>
@@ -110,7 +80,7 @@ function SitePreview({ colors, logoUrl }) {
   )
 }
 
-export default function BrandingUpload() {
+export default function BrandingUpload({ onBrandingApplied }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [logoUrl, setLogoUrl] = useState(null)
@@ -159,15 +129,12 @@ export default function BrandingUpload() {
     reader.readAsDataURL(selectedFile)
   }, [])
 
-  const handleDrop = useCallback(
-    (event) => {
-      event.preventDefault()
-      event.stopPropagation()
-      const droppedFile = event.dataTransfer.files?.[0]
-      if (droppedFile) handleFile(droppedFile)
-    },
-    [handleFile]
-  )
+  const handleDrop = useCallback((event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const droppedFile = event.dataTransfer.files?.[0]
+    if (droppedFile) handleFile(droppedFile)
+  }, [handleFile])
 
   const handleDragOver = useCallback((event) => {
     event.preventDefault()
@@ -244,7 +211,8 @@ export default function BrandingUpload() {
         text_color: colors.text
       })
 
-      setStatusMessage('Configurações aplicadas com sucesso!')
+      setStatusMessage('Configurações de branding aplicadas com sucesso!')
+      if (onBrandingApplied) onBrandingApplied()
     } catch (err) {
       setError('Erro ao aplicar: ' + err.message)
     } finally {
@@ -265,54 +233,37 @@ export default function BrandingUpload() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Branding</h2>
+        <h2 className="text-lg font-semibold text-slate-900">🎨 Branding Inteligente com IA</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Envie a logomarca do tenant para extrair a paleta de cores e visualizar
-          o resultado antes de aplicar.
+          Envie a logomarca do supermercado para extrair automaticamente a paleta de cores ideal.
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Upload da logo
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Formatos aceitos: PNG, JPG, SVG e WebP. Tamanho máximo: 2MB.
-              </p>
+              <h3 className="text-base font-semibold text-slate-900">Upload da logo</h3>
+              <p className="mt-1 text-xs text-slate-500">Formatos aceitos: PNG, JPG, SVG e WebP. Máximo: 2MB.</p>
             </div>
 
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onClick={() => fileInputRef.current?.click()}
-              className="flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center transition hover:border-blue-400 hover:bg-blue-50"
+              className="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center transition hover:border-blue-400 hover:bg-blue-50"
             >
               {preview ? (
                 <div className="flex flex-col items-center gap-4">
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="max-h-48 w-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
-                  />
-                  <p className="text-sm font-medium text-slate-700">
-                    {file?.name}
-                  </p>
-                  <p className="text-xs text-slate-500">{dropzoneText}</p>
+                  <img src={preview} alt="Preview" className="max-h-40 w-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm" />
+                  <p className="text-xs font-medium text-slate-700">{file?.name}</p>
+                  <p className="text-xs text-slate-400">{dropzoneText}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-700">
-                    ↑
-                  </div>
-                  <p className="text-sm font-medium text-slate-700">
-                    {dropzoneText}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    A paleta será sugerida automaticamente após o upload.
-                  </p>
+                  <div className="mx-auto flex h-12 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-700">↑</div>
+                  <p className="text-xs font-medium text-slate-700">{dropzoneText}</p>
+                  <p className="text-xs text-slate-400">A paleta será sugerida automaticamente após o upload.</p>
                 </div>
               )}
 
@@ -325,23 +276,23 @@ export default function BrandingUpload() {
               />
             </div>
 
-            {error ? (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error && (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
                 {error}
               </div>
-            ) : null}
+            )}
 
-            {statusMessage ? (
-              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {statusMessage && (
+              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
                 {statusMessage}
               </div>
-            ) : null}
+            )}
 
             <div className="mt-6 flex flex-wrap gap-3">
               <button
                 onClick={handleExtractColors}
                 disabled={!file || extracting}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {extracting ? 'Extraindo...' : 'Extrair cores automaticamente'}
               </button>
@@ -349,34 +300,28 @@ export default function BrandingUpload() {
               <button
                 onClick={handleApplyColors}
                 disabled={!logoUrl || extracting || applying}
-                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {applying ? 'Aplicando...' : 'Aplicar cores'}
               </button>
 
               <button
                 onClick={reset}
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Regenerar
               </button>
             </div>
 
-            {extracting ? (
-              <p className="mt-4 text-sm text-slate-500">
-                Aguarde, extraindo cores... (até 30s)
-              </p>
-            ) : null}
+            {extracting && (
+              <p className="mt-4 text-xs text-slate-500">Aguarde, extraindo cores... (até 30s)</p>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Cores extraídas
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Revise a paleta sugerida antes de aplicar no tenant.
-              </p>
+              <h3 className="text-base font-semibold text-slate-900">Cores extraídas</h3>
+              <p className="mt-1 text-xs text-slate-500">Revise a paleta sugerida antes de aplicar no tenant.</p>
             </div>
 
             <div className="space-y-3">
@@ -391,12 +336,8 @@ export default function BrandingUpload() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-slate-900">
-              Preview visual
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Simulação do frontend público usando a identidade visual extraída.
-            </p>
+            <h3 className="text-base font-semibold text-slate-900">Preview visual</h3>
+            <p className="mt-1 text-xs text-slate-500">Simulação do site público usando a identidade visual extraída.</p>
           </div>
 
           <SitePreview colors={colors} logoUrl={logoUrl} />

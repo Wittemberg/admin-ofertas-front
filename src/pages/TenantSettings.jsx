@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { getTenantSettings, updateTenantSettings, uploadTenantLogo } from '../api/tenant'
+import BrandingUpload from './BrandingUpload'
 
 const TABS = [
   { id: 'info', label: '📋 Informações' },
   { id: 'contact', label: '📞 Contato' },
   { id: 'address', label: '📍 Endereço' },
-  { id: 'branding', label: '🎨 Branding' },
+  { id: 'branding', label: '🎨 Branding IA' },
   { id: 'social', label: '🔗 Redes' },
   { id: 'hours', label: '🕐 Horários' }
 ]
 
 const DEFAULT_SOCIAL = { instagram: '', facebook: '', youtube: '', tiktok: '' }
+
 const DEFAULT_HOURS = [
   { day: 'Segunda', open: '08:00', close: '18:00' },
   { day: 'Terça', open: '08:00', close: '18:00' },
@@ -22,23 +25,41 @@ const DEFAULT_HOURS = [
 ]
 
 export default function TenantSettings() {
-  const [activeTab, setActiveTab] = useState('info')
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  
+  // Controla a aba ativa via Query String (?tab=...) com fallback para 'info'
+  const activeTab = searchParams.get('tab') || 'info'
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null)
   const [settings, setSettings] = useState({
-    name: '', description: '', domain: '',
-    contact_phone: '', contact_email: '', contact_whatsapp: '',
-    address_street: '', address_number: '', address_city: '', address_state: '', address_zip: '',
+    name: '',
+    description: '',
+    domain: '',
+    contact_phone: '',
+    contact_email: '',
+    contact_whatsapp: '',
+    address_street: '',
+    address_number: '',
+    address_city: '',
+    address_state: '',
+    address_zip: '',
     logo_url: '',
-    primary_color: '#2563eb', secondary_color: '#1e40af',
-    accent_color: '#f59e0b', background_color: '#ffffff', text_color: '#1a1a1a',
+    primary_color: '#2563eb',
+    secondary_color: '#1e40af',
+    accent_color: '#f59e0b',
+    background_color: '#ffffff',
+    text_color: '#1a1a1a',
     social_media: { ...DEFAULT_SOCIAL },
     opening_hours: [...DEFAULT_HOURS],
     font_family: "'Inter', sans-serif"
   })
 
-  useEffect(() => { loadSettings() }, [])
+  useEffect(() => {
+    loadSettings()
+  }, [])
 
   async function loadSettings() {
     try {
@@ -72,6 +93,7 @@ export default function TenantSettings() {
       }
     } catch (err) {
       console.error('Erro ao carregar configurações:', err)
+      setMessage({ type: 'error', text: '❌ Erro ao carregar configurações.' })
     } finally {
       setLoading(false)
     }
@@ -104,7 +126,7 @@ export default function TenantSettings() {
       })
       setMessage({ type: 'success', text: '✅ Configurações salvas com sucesso!' })
     } catch (err) {
-      setMessage({ type: 'error', text: '❌ Erro ao salvar: ' + (err.response?.data?.error || err.message || 'Erro desconhecido') })
+      setMessage({ type: 'error', text: '❌ Erro ao salvar: ' + (err.response?.data?.error || err.message) })
     } finally {
       setSaving(false)
     }
@@ -139,6 +161,11 @@ export default function TenantSettings() {
     setSettings(prev => ({ ...prev, opening_hours: hours }))
   }
 
+  function handleTabChange(tabId) {
+    setSearchParams({ tab: tabId })
+    setMessage(null)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -147,21 +174,13 @@ export default function TenantSettings() {
     )
   }
 
-  const previewStyle = {
-    fontFamily: settings.font_family,
-    backgroundColor: settings.background_color,
-    color: settings.text_color,
-    '--primary': settings.primary_color,
-    '--secondary': settings.secondary_color,
-    '--accent': settings.accent_color
-  }
-
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <a href="/" className="text-blue-600 hover:text-blue-800 text-sm mb-4 inline-block">
+      <div className="max-w-5xl mx-auto">
+        <button onClick={() => navigate('/')} className="text-blue-600 hover:text-blue-800 text-sm mb-4 inline-block">
           ← Voltar ao Dashboard
-        </a>  
+        </button>
+        
         <h1 className="text-2xl font-bold mb-6">⚙️ Configurações da Empresa</h1>
 
         {message && (
@@ -170,23 +189,26 @@ export default function TenantSettings() {
           </div>
         )}
 
-        {/* Abas */}
+        {/* Abas de Navegação */}
         <div className="flex flex-wrap gap-1 mb-6 border-b bg-white rounded-t-lg p-2">
           {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition ${
                 activeTab === tab.id
                   ? 'bg-blue-600 text-white shadow'
                   : 'text-gray-600 hover:bg-gray-100'
-              }`}>
+              }`}
+            >
               {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Conteúdo */}
+        {/* Conteúdo Dinâmico das Abas */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-
+          
           {activeTab === 'info' && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold mb-4">📋 Informações Gerais</h2>
@@ -276,116 +298,7 @@ export default function TenantSettings() {
           )}
 
           {activeTab === 'branding' && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold mb-4">🎨 Identidade Visual</h2>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo da Empresa</label>
-                <div className="flex items-start gap-4">
-                  <div className="w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
-                    {settings.logo_url
-                      ? <img src={settings.logo_url} alt="Logo" className="w-full h-full object-contain" />
-                      : <span className="text-gray-400 text-sm text-center px-2">Sem logo</span>}
-                  </div>
-                  <div>
-                    <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm inline-block">
-                      📤 Upload Logo
-                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG ou SVG. Máx 2MB.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cor Primária</label>
-                  <div className="flex gap-2">
-                    <input type="color" value={settings.primary_color}
-                      onChange={e => updateField('primary_color', e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer border" />
-                    <input type="text" value={settings.primary_color}
-                      onChange={e => updateField('primary_color', e.target.value)}
-                      className="flex-1 border rounded-lg px-3 py-2 font-mono text-sm" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cor Secundária</label>
-                  <div className="flex gap-2">
-                    <input type="color" value={settings.secondary_color}
-                      onChange={e => updateField('secondary_color', e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer border" />
-                    <input type="text" value={settings.secondary_color}
-                      onChange={e => updateField('secondary_color', e.target.value)}
-                      className="flex-1 border rounded-lg px-3 py-2 font-mono text-sm" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cor de Destaque</label>
-                  <div className="flex gap-2">
-                    <input type="color" value={settings.accent_color}
-                      onChange={e => updateField('accent_color', e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer border" />
-                    <input type="text" value={settings.accent_color}
-                      onChange={e => updateField('accent_color', e.target.value)}
-                      className="flex-1 border rounded-lg px-3 py-2 font-mono text-sm" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fundo</label>
-                  <div className="flex gap-2">
-                    <input type="color" value={settings.background_color}
-                      onChange={e => updateField('background_color', e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer border" />
-                    <input type="text" value={settings.background_color}
-                      onChange={e => updateField('background_color', e.target.value)}
-                      className="flex-1 border rounded-lg px-3 py-2 font-mono text-sm" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Texto</label>
-                  <div className="flex gap-2">
-                    <input type="color" value={settings.text_color}
-                      onChange={e => updateField('text_color', e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer border" />
-                    <input type="text" value={settings.text_color}
-                      onChange={e => updateField('text_color', e.target.value)}
-                      className="flex-1 border rounded-lg px-3 py-2 font-mono text-sm" />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fonte</label>
-                <select value={settings.font_family}
-                  onChange={e => updateField('font_family', e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
-                  <option value="'Inter', sans-serif">Inter (Padrão)</option>
-                  <option value="'Roboto', sans-serif">Roboto</option>
-                  <option value="'Poppins', sans-serif">Poppins</option>
-                  <option value="'Montserrat', sans-serif">Montserrat</option>
-                  <option value="'Open Sans', sans-serif">Open Sans</option>
-                  <option value="'Lato', sans-serif">Lato</option>
-                  <option value="'Merriweather', serif">Merriweather</option>
-                </select>
-              </div>
-
-              {/* Preview ao vivo */}
-              <div className="mt-6 p-4 rounded-lg border" style={previewStyle}>
-                <h3 className="font-semibold mb-2" style={{ color: 'var(--primary)' }}>👁️ Preview do Site</h3>
-                <div className="flex items-center gap-3 mb-3">
-                  {settings.logo_url && <img src={settings.logo_url} alt="" className="h-10" />}
-                  <span className="text-lg font-bold" style={{ color: 'var(--primary)' }}>{settings.name || 'Nome da Empresa'}</span>
-                </div>
-                <p className="text-sm" style={{ color: 'var(--secondary)' }}>{settings.description || 'Descrição da empresa aparecerá aqui.'}</p>
-                <button className="mt-2 px-4 py-2 rounded-lg text-sm text-white transition"
-                  style={{ backgroundColor: 'var(--primary)' }}>
-                  Saiba Mais
-                </button>
-              </div>
-            </div>
+            <BrandingUpload onBrandingApplied={loadSettings} />
           )}
 
           {activeTab === 'social' && (
@@ -418,19 +331,19 @@ export default function TenantSettings() {
                       <th className="pb-2">Fechamento</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {settings.opening_hours.map((hour, i) => (
-                      <tr key={i} className="border-b last:border-0">
-                        <td className="py-3 font-medium">{hour.day}</td>
-                        <td className="py-3">
-                          <input type="time" value={hour.open}
+                  <tbody className="divide-y">
+                    {settings.opening_hours.map((h, i) => (
+                      <tr key={h.day}>
+                        <td className="py-3 font-medium text-sm">{h.day}</td>
+                        <td className="py-2">
+                          <input type="time" value={h.open}
                             onChange={e => updateHour(i, 'open', e.target.value)}
-                            className="border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500" />
+                            className="border rounded px-2 py-1 text-sm" />
                         </td>
-                        <td className="py-3">
-                          <input type="time" value={hour.close}
+                        <td className="py-2">
+                          <input type="time" value={h.close}
                             onChange={e => updateHour(i, 'close', e.target.value)}
-                            className="border rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500" />
+                            className="border rounded px-2 py-1 text-sm" />
                         </td>
                       </tr>
                     ))}
@@ -441,13 +354,15 @@ export default function TenantSettings() {
           )}
         </div>
 
-        {/* Botão Salvar */}
-        <div className="flex justify-end">
-          <button onClick={handleSave} disabled={saving}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 shadow">
-            {saving ? '💾 Salvando...' : '💾 Salvar Configurações'}
-          </button>
-        </div>
+        {/* Botão Salvar (Oculto na aba de Branding IA, pois ela possui ações próprias de aplicação) */}
+        {activeTab !== 'branding' && (
+          <div className="flex justify-end">
+            <button onClick={handleSave} disabled={saving}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 shadow">
+              {saving ? '💾 Salvando...' : '💾 Salvar Configurações'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
