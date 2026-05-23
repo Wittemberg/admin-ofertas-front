@@ -12,17 +12,25 @@ const DEFAULT_COLORS = {
   text: '#0f172a'
 }
 
-function ColorRow({ label, color }) {
+function EditableColorRow({ label, color, onChange }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <div className="flex items-center gap-3">
-        <span
-          className="h-5 w-5 rounded-full border border-slate-300 bg-[var(--swatch)]"
-          style={{ '--swatch': color }}
+    <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-3 flex-1">
+        <input
+          type="color"
+          value={color}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-8 w-8 rounded-lg cursor-pointer border border-slate-300 bg-transparent"
         />
         <span className="text-sm font-medium text-slate-700">{label}</span>
       </div>
-      <span className="font-mono text-sm text-slate-500">{color}</span>
+      <input
+        type="text"
+        value={color}
+        onChange={(e) => onChange(e.target.value)}
+        maxLength={7}
+        className="font-mono text-sm text-slate-600 border border-slate-200 rounded-lg px-2 py-1 w-24 text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
     </div>
   )
 }
@@ -166,7 +174,7 @@ export default function BrandingUpload({ onBrandingApplied }) {
             setColors(job.colors || DEFAULT_COLORS)
             setLogoUrl(job.logo_url || data.logo_url || null)
             setExtracting(false)
-            setStatusMessage('Cores extraídas com sucesso!')
+            setStatusMessage('Cores sugeridas com sucesso! Você pode ajustá-las abaixo antes de aplicar.')
             return
           }
 
@@ -194,6 +202,13 @@ export default function BrandingUpload({ onBrandingApplied }) {
       setExtracting(false)
       setError('Erro no upload: ' + uploadErr.message)
     }
+  }
+
+  const handleColorChange = (key, value) => {
+    setColors(prev => ({
+      ...prev,
+      [key]: value
+    }))
   }
 
   const handleApplyColors = async () => {
@@ -235,7 +250,7 @@ export default function BrandingUpload({ onBrandingApplied }) {
       <div>
         <h2 className="text-lg font-semibold text-slate-900">🎨 Branding Inteligente com IA</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Envie a logomarca do supermercado para extrair automaticamente a paleta de cores ideal.
+          Envie a logomarca do supermercado para sugerir a paleta de cores. Você pode personalizar os valores gerados livremente.
         </p>
       </div>
 
@@ -294,12 +309,12 @@ export default function BrandingUpload({ onBrandingApplied }) {
                 disabled={!file || extracting}
                 className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
-                {extracting ? 'Extraindo...' : 'Extrair cores automaticamente'}
+                {extracting ? 'Extraindo...' : 'Sugerir cores com IA'}
               </button>
 
               <button
                 onClick={handleApplyColors}
-                disabled={!logoUrl || extracting || applying}
+                disabled={extracting || applying}
                 className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {applying ? 'Aplicando...' : 'Aplicar cores'}
@@ -320,24 +335,24 @@ export default function BrandingUpload({ onBrandingApplied }) {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4">
-              <h3 className="text-base font-semibold text-slate-900">Cores extraídas</h3>
-              <p className="mt-1 text-xs text-slate-500">Revise a paleta sugerida antes de aplicar no tenant.</p>
+              <h3 className="text-base font-semibold text-slate-900">Paleta de Cores (Editável)</h3>
+              <p className="mt-1 text-xs text-slate-500">Ajuste os seletores ou digite os códigos hexadecimais diretamente.</p>
             </div>
 
             <div className="space-y-3">
-              <ColorRow label="Primary" color={colors.primary} />
-              <ColorRow label="Secondary" color={colors.secondary} />
-              <ColorRow label="Accent" color={colors.accent} />
-              <ColorRow label="Background" color={colors.background} />
-              <ColorRow label="Text" color={colors.text} />
+              <EditableColorRow label="Primary (Cor Principal)" color={colors.primary} onChange={(val) => handleColorChange('primary', val)} />
+              <EditableColorRow label="Secondary (Cor Secundária)" color={colors.secondary} onChange={(val) => handleColorChange('secondary', val)} />
+              <EditableColorRow label="Accent (Destaques)" color={colors.accent} onChange={(val) => handleColorChange('accent', val)} />
+              <EditableColorRow label="Background (Fundo)" color={colors.background} onChange={(val) => handleColorChange('background', val)} />
+              <EditableColorRow label="Text (Texto)" color={colors.text} onChange={(val) => handleColorChange('text', val)} />
             </div>
           </div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-slate-900">Preview visual</h3>
-            <p className="mt-1 text-xs text-slate-500">Simulação do site público usando a identidade visual extraída.</p>
+            <h3 className="text-base font-semibold text-slate-900">Preview visual em tempo real</h3>
+            <p className="mt-1 text-xs text-slate-500">Simulação do site público atualizada instantaneamente conforme você edita.</p>
           </div>
 
           <SitePreview colors={colors} logoUrl={logoUrl} />
