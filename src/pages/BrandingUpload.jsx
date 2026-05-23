@@ -44,7 +44,7 @@ function SitePreview({ colors, logoUrl, localPreview }) {
     '--brand-text': colors.text
   }), [colors])
 
-  // CORREÇÃO CRÍTICA: Prioriza o preview local (Base64 da nova imagem) sobre a URL antiga do banco
+  // Prioriza o preview local (Base64 da nova imagem) sobre a URL antiga do banco
   const activeLogo = localPreview || logoUrl
 
   return (
@@ -114,9 +114,9 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
 
-  // Sincroniza o estado apenas se as configurações do tenant mudarem externamente e NÃO houver arquivo local em edição
+  // Sincroniza o estado apenas se as configurações do tenant mudarem externamente e NÃO houver arquivo local em edição ou salvamento ativo
   useEffect(() => {
-    if (!file) {
+    if (!file && !applying) {
       if (currentSettings?.primary_color) {
         setColors({
           primary: currentSettings.primary_color,
@@ -131,7 +131,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
         setLogoUrl(currentSettings.logo_url)
       }
     }
-  }, [currentSettings, file])
+  }, [currentSettings, file, applying])
 
   const fileInputRef = useRef(null)
   const pollRef = useRef(null)
@@ -276,6 +276,9 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       if (onBrandingApplied) {
         await onBrandingApplied()
       }
+      
+      // Limpa o arquivo local após aplicar com sucesso para permitir que o useEffect sincronize com o banco
+      setFile(null)
     } catch (err) {
       setError('Erro ao aplicar: ' + err.message)
     } finally {
