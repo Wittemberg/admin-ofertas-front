@@ -181,7 +181,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     event.stopPropagation()
   }, [])
 
-  const handleExtractColors = async () => {
+    const handleExtractColors = async () => {
     if (!file) return
 
     setError('')
@@ -192,7 +192,12 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     try {
       const { data } = await uploadTenantBranding(file)
       const jobId = data.job_id
-      setLogoUrl(data.logo_url)
+      
+      // CORREÇÃO 1: Define a URL da logo imediatamente após o upload inicial
+      if (data.logo_url) {
+        setLogoUrl(data.logo_url)
+        setPreview(data.logo_url)
+      }
 
       let attempts = 0
 
@@ -204,7 +209,14 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
           if (job.status === 'completed') {
             setColors(job.colors || DEFAULT_COLORS)
-            setLogoUrl(job.logo_url || data.logo_url || null)
+            
+            // CORREÇÃO 2: Garante a persistência da URL retornada pelo job finalizado
+            const finalLogoUrl = job.logo_url || data.logo_url
+            if (finalLogoUrl) {
+              setLogoUrl(finalLogoUrl)
+              setPreview(finalLogoUrl)
+            }
+            
             setExtracting(false)
             setStatusMessage('Cores sugeridas com sucesso! Você pode ajustá-las abaixo antes de aplicar.')
             return
@@ -244,20 +256,33 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   }
 
   const handleApplyColors = async () => {
-  try {
-    setApplying(true)
-    setError('')
-    setStatusMessage('')
+    try {
+      setApplying(true)
+      setError('')
+      setStatusMessage('')
 
-    // Envia as novas configurações para o backend
-    await updateTenantSettings({
-      logo_url: logoUrl,
-      primary_color: colors.primary,
-      secondary_color: colors.secondary,
-      accent_color: colors.accent,
-      background_color: colors.background,
-      text_color: colors.text
-    })
+      // CORREÇÃO 3: Envia a logoUrl correta do estado para persistir no banco
+      await updateTenantSettings({
+        logo_url: logoUrl,
+        primary_color: colors.primary,
+        secondary_color: colors.secondary,
+        accent_color: colors.accent,
+        background_color: colors.background,
+        text_color: colors.text
+      })
+
+      setStatusMessage('Configurações de branding aplicadas com sucesso!')
+      
+      // Notifica o componente pai (TenantSettings) para recarregar os dados do banco
+      if (onBrandingApplied) {
+        await onBrandingApplied()
+      }
+    } catch (err) {
+      setError('Erro ao aplicar: ' + err.message)
+    } finally {
+      setApplying(false)
+    }
+  }
 
     setStatusMessage('Configurações de branding aplicadas com sucesso!')
     
