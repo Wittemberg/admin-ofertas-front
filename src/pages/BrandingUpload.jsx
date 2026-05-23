@@ -88,15 +88,47 @@ function SitePreview({ colors, logoUrl }) {
   )
 }
 
-export default function BrandingUpload({ onBrandingApplied }) {
+export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
+  // Se já existirem cores salvas no tenant, usamos elas como ponto de partida.
+  // Caso contrário, usamos a paleta padrão (DEFAULT_COLORS).
+  const initialColors = useMemo(() => {
+    if (currentSettings?.primary_color) {
+      return {
+        primary: currentSettings.primary_color,
+        secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
+        accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
+        background: currentSettings.background_color || DEFAULT_COLORS.background,
+        text: currentSettings.text_color || DEFAULT_COLORS.text
+      }
+    }
+    return DEFAULT_COLORS;
+  }, [currentSettings]);
+
   const [file, setFile] = useState(null)
-  const [preview, setPreview] = useState(null)
-  const [logoUrl, setLogoUrl] = useState(null)
+  const [preview, setPreview] = useState(currentSettings?.logo_url || null)
+  const [logoUrl, setLogoUrl] = useState(currentSettings?.logo_url || null)
   const [extracting, setExtracting] = useState(false)
   const [applying, setApplying] = useState(false)
-  const [colors, setColors] = useState(DEFAULT_COLORS)
+  const [colors, setColors] = useState(initialColors)
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
+
+  // Sincroniza o estado se as configurações do tenant mudarem externamente
+  useEffect(() => {
+    if (currentSettings?.primary_color) {
+      setColors({
+        primary: currentSettings.primary_color,
+        secondary: currentSettings.secondary_color,
+        accent: currentSettings.accent_color,
+        background: currentSettings.background_color,
+        text: currentSettings.text_color
+      });
+    }
+    if (currentSettings?.logo_url) {
+      setPreview(currentSettings.logo_url);
+      setLogoUrl(currentSettings.logo_url);
+    }
+  }, [currentSettings]);
 
   const fileInputRef = useRef(null)
   const pollRef = useRef(null)

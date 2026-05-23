@@ -298,7 +298,10 @@ export default function TenantSettings() {
           )}
 
           {activeTab === 'branding' && (
-            <BrandingUpload onBrandingApplied={loadSettings} />
+            <BrandingUpload 
+              onBrandingApplied={loadSettings} 
+              currentSettings={settings} 
+            />
           )}
 
           {activeTab === 'social' && (
