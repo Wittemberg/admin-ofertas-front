@@ -35,7 +35,7 @@ function EditableColorRow({ label, color, onChange }) {
   )
 }
 
-function SitePreview({ colors, logoUrl }) {
+function SitePreview({ colors, logoUrl, localPreview }) {
   const previewVars = useMemo(() => ({
     '--brand-primary': colors.primary,
     '--brand-secondary': colors.secondary,
@@ -44,12 +44,15 @@ function SitePreview({ colors, logoUrl }) {
     '--brand-text': colors.text
   }), [colors])
 
+  // Usa o preview local em Base64 como fallback imediato se a URL do S3 ainda não estiver pronta
+  const activeLogo = logoUrl || localPreview
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" style={previewVars}>
       <div className="bg-[var(--brand-primary)] px-5 py-4">
         <div className="flex items-center gap-3">
-          {logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="h-10 w-auto rounded bg-white p-1" />
+          {activeLogo ? (
+            <img src={activeLogo} alt="Logo" className="h-10 w-auto rounded bg-white p-1 object-contain" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded bg-white text-xs font-semibold text-slate-500">
               LOGO
@@ -111,21 +114,24 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
 
+  // Sincroniza o estado apenas se as configurações do tenant mudarem externamente e NÃO houver arquivo local em edição
   useEffect(() => {
-    if (currentSettings?.primary_color) {
-      setColors({
-        primary: currentSettings.primary_color,
-        secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
-        accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
-        background: currentSettings.background_color || DEFAULT_COLORS.background,
-        text: currentSettings.text_color || DEFAULT_COLORS.text
-      })
+    if (!file) {
+      if (currentSettings?.primary_color) {
+        setColors({
+          primary: currentSettings.primary_color,
+          secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
+          accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
+          background: currentSettings.background_color || DEFAULT_COLORS.background,
+          text: currentSettings.text_color || DEFAULT_COLORS.text
+        })
+      }
+      if (currentSettings?.logo_url) {
+        setPreview(currentSettings.logo_url)
+        setLogoUrl(currentSettings.logo_url)
+      }
     }
-    if (currentSettings?.logo_url) {
-      setPreview(currentSettings.logo_url)
-      setLogoUrl(currentSettings.logo_url)
-    }
-  }, [currentSettings])
+  }, [currentSettings, file])
 
   const fileInputRef = useRef(null)
   const pollRef = useRef(null)
@@ -162,7 +168,10 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     setFile(selectedFile)
 
     const reader = new FileReader()
-    reader.onload = (event) => setPreview(event.target?.result || null)
+    reader.onload = (event) => {
+      const result = event.target?.result || null
+      setPreview(result) // Define o preview local em Base64 imediatamente
+    }
     reader.readAsDataURL(selectedFile)
   }, [])
 
@@ -184,7 +193,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     setError('')
     setStatusMessage('')
     setExtracting(true)
-    setColors(DEFAULT_COLORS)
+    // Mantém a paleta atual como ponto de partida em vez de resetar bruscamente para azul
 
     try {
       const { data } = await uploadTenantBranding(file)
@@ -192,7 +201,6 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
       if (data.logo_url) {
         setLogoUrl(data.logo_url)
-        setPreview(data.logo_url)
       }
 
       let attempts = 0
@@ -209,7 +217,6 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
             const finalLogoUrl = job.logo_url || data.logo_url
             if (finalLogoUrl) {
               setLogoUrl(finalLogoUrl)
-              setPreview(finalLogoUrl)
             }
 
             setExtracting(false)
@@ -277,12 +284,6 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     }
   }
 
-  useEffect(() => {
-    return () => {
-      if (pollRef.current) clearTimeout(pollRef.current)
-    }
-  }, [])
-
   const dropzoneText = preview
     ? 'Clique para trocar a logo'
     : 'Arraste sua logo aqui ou clique para selecionar'
@@ -312,8 +313,8 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
             >
               {preview ? (
                 <div className="flex flex-col items-center gap-4">
-                  <img src={preview} alt="Preview" className="max-h-40 w-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm" />
-                  <p className="text-xs font-medium text-slate-700">{file?.name}</p>
+                  <img src={preview} alt="Preview" className="max-h-40 w-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm object-contain" />
+                  <p className="text-xs font-medium text-slate-700">{file?.name || 'Logo Atual'}</p>
                   <p className="text-xs text-slate-400">{dropzoneText}</p>
                 </div>
               ) : (
@@ -397,7 +398,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
             <p className="mt-1 text-xs text-slate-500">Simulação do site público atualizada instantaneamente conforme você edita.</p>
           </div>
 
-          <SitePreview colors={colors} logoUrl={logoUrl} />
+          <SitePreview colors={colors} logoUrl={logoUrl} localPreview={preview} />
         </div>
       </div>
     </div>
