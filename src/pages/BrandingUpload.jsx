@@ -44,8 +44,8 @@ function SitePreview({ colors, logoUrl, localPreview }) {
     '--brand-text': colors.text
   }), [colors])
 
-  // Usa o preview local em Base64 como fallback imediato se a URL do S3 ainda não estiver pronta
-  const activeLogo = logoUrl || localPreview
+  // CORREÇÃO CRÍTICA: Prioriza o preview local (Base64 da nova imagem) sobre a URL antiga do banco
+  const activeLogo = localPreview || logoUrl
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" style={previewVars}>
@@ -193,7 +193,6 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     setError('')
     setStatusMessage('')
     setExtracting(true)
-    // Mantém a paleta atual como ponto de partida em vez de resetar bruscamente para azul
 
     try {
       const { data } = await uploadTenantBranding(file)
@@ -284,6 +283,12 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     }
   }
 
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearTimeout(pollRef.current)
+    }
+  }, [])
+
   const dropzoneText = preview
     ? 'Clique para trocar a logo'
     : 'Arraste sua logo aqui ou clique para selecionar'
@@ -314,7 +319,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
               {preview ? (
                 <div className="flex flex-col items-center gap-4">
                   <img src={preview} alt="Preview" className="max-h-40 w-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm object-contain" />
-                  <p className="text-xs font-medium text-slate-700">{file?.name || 'Logo Atual'}</p>
+                  <p className="text-xs font-medium text-slate-700">{file?.name || 'Logo Selecionada'}</p>
                   <p className="text-xs text-slate-400">{dropzoneText}</p>
                 </div>
               ) : (
