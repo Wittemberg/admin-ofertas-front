@@ -99,38 +99,39 @@ export default function TenantSettings() {
     }
   }
 
-  async function handleSave() {
-    try {
-      setSaving(true)
-      setMessage(null)
-      await updateTenantSettings({
-        name: settings.name,
-        description: settings.description,
-        domain: settings.domain,
-        contact_phone: settings.contact_phone,
-        contact_email: settings.contact_email,
-        contact_whatsapp: settings.contact_whatsapp,
-        address_street: settings.address_street,
-        address_number: settings.address_number,
-        address_city: settings.address_city,
-        address_state: settings.address_state,
-        address_zip: settings.address_zip,
-        primary_color: settings.primary_color,
-        secondary_color: settings.secondary_color,
-        accent_color: settings.accent_color,
-        background_color: settings.background_color,
-        text_color: settings.text_color,
-        social_media: settings.social_media,
-        opening_hours: settings.opening_hours,
-        font_family: settings.font_family
-      })
-      setMessage({ type: 'success', text: '✅ Configurações salvas com sucesso!' })
-    } catch (err) {
-      setMessage({ type: 'error', text: '❌ Erro ao salvar: ' + (err.response?.data?.error || err.message) })
-    } finally {
-      setSaving(false)
-    }
+async function handleSave() {
+  try {
+    setSaving(true)
+    setMessage(null)
+    await updateTenantSettings({
+      name: settings.name,
+      description: settings.description,
+      domain: settings.domain,
+      contact_phone: settings.contact_phone,
+      contact_email: settings.contact_email,
+      contact_whatsapp: settings.contact_whatsapp,
+      address_street: settings.address_street,
+      address_number: settings.address_number,
+      address_city: settings.address_city,
+      address_state: settings.address_state,
+      address_zip: settings.address_zip,
+      logo_url: settings.logo_url, //  CORREÇÃO: Garante que a logo_url existente não seja apagada
+      primary_color: settings.primary_color,
+      secondary_color: settings.secondary_color,
+      accent_color: settings.accent_color,
+      background_color: settings.background_color,
+      text_color: settings.text_color,
+      social_media: settings.social_media,
+      opening_hours: settings.opening_hours,
+      font_family: settings.font_family
+    })
+    setMessage({ type: 'success', text: '✅ Configurações salvas com sucesso!' })
+  } catch (err) {
+    setMessage({ type: 'error', text: '❌ Erro ao salvar: ' + (err.response?.data?.error || err.message) })
+  } finally {
+    setSaving(false)
   }
+}
 
   async function handleLogoUpload(e) {
     const file = e.target.files?.[0]

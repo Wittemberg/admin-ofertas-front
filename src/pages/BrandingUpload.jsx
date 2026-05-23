@@ -244,28 +244,33 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   }
 
   const handleApplyColors = async () => {
-    try {
-      setApplying(true)
-      setError('')
-      setStatusMessage('')
+  try {
+    setApplying(true)
+    setError('')
+    setStatusMessage('')
 
-      await updateTenantSettings({
-        logo_url: logoUrl,
-        primary_color: colors.primary,
-        secondary_color: colors.secondary,
-        accent_color: colors.accent,
-        background_color: colors.background,
-        text_color: colors.text
-      })
+    // Envia as novas configurações para o backend
+    await updateTenantSettings({
+      logo_url: logoUrl,
+      primary_color: colors.primary,
+      secondary_color: colors.secondary,
+      accent_color: colors.accent,
+      background_color: colors.background,
+      text_color: colors.text
+    })
 
-      setStatusMessage('Configurações de branding aplicadas com sucesso!')
-      if (onBrandingApplied) onBrandingApplied()
-    } catch (err) {
-      setError('Erro ao aplicar: ' + err.message)
-    } finally {
-      setApplying(false)
+    setStatusMessage('Configurações de branding aplicadas com sucesso!')
+    
+    //  CORREÇÃO: Executa o callback notificando o pai para recarregar as configurações do banco
+    if (onBrandingApplied) {
+      await onBrandingApplied()
     }
+  } catch (err) {
+    setError('Erro ao aplicar: ' + err.message)
+  } finally {
+    setApplying(false)
   }
+}
 
   useEffect(() => {
     return () => {
