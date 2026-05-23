@@ -89,8 +89,6 @@ function SitePreview({ colors, logoUrl }) {
 }
 
 export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
-  // Se já existirem cores salvas no tenant, usamos elas como ponto de partida.
-  // Caso contrário, usamos a paleta padrão (DEFAULT_COLORS).
   const initialColors = useMemo(() => {
     if (currentSettings?.primary_color) {
       return {
@@ -101,8 +99,8 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
         text: currentSettings.text_color || DEFAULT_COLORS.text
       }
     }
-    return DEFAULT_COLORS;
-  }, [currentSettings]);
+    return DEFAULT_COLORS
+  }, [currentSettings])
 
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(currentSettings?.logo_url || null)
@@ -113,22 +111,21 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
 
-  // Sincroniza o estado se as configurações do tenant mudarem externamente
   useEffect(() => {
     if (currentSettings?.primary_color) {
       setColors({
         primary: currentSettings.primary_color,
-        secondary: currentSettings.secondary_color,
-        accent: currentSettings.accent_color,
-        background: currentSettings.background_color,
-        text: currentSettings.text_color
-      });
+        secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
+        accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
+        background: currentSettings.background_color || DEFAULT_COLORS.background,
+        text: currentSettings.text_color || DEFAULT_COLORS.text
+      })
     }
     if (currentSettings?.logo_url) {
-      setPreview(currentSettings.logo_url);
-      setLogoUrl(currentSettings.logo_url);
+      setPreview(currentSettings.logo_url)
+      setLogoUrl(currentSettings.logo_url)
     }
-  }, [currentSettings]);
+  }, [currentSettings])
 
   const fileInputRef = useRef(null)
   const pollRef = useRef(null)
@@ -181,7 +178,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     event.stopPropagation()
   }, [])
 
-    const handleExtractColors = async () => {
+  const handleExtractColors = async () => {
     if (!file) return
 
     setError('')
@@ -192,8 +189,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     try {
       const { data } = await uploadTenantBranding(file)
       const jobId = data.job_id
-      
-      // CORREÇÃO 1: Define a URL da logo imediatamente após o upload inicial
+
       if (data.logo_url) {
         setLogoUrl(data.logo_url)
         setPreview(data.logo_url)
@@ -209,14 +205,13 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
           if (job.status === 'completed') {
             setColors(job.colors || DEFAULT_COLORS)
-            
-            // CORREÇÃO 2: Garante a persistência da URL retornada pelo job finalizado
+
             const finalLogoUrl = job.logo_url || data.logo_url
             if (finalLogoUrl) {
               setLogoUrl(finalLogoUrl)
               setPreview(finalLogoUrl)
             }
-            
+
             setExtracting(false)
             setStatusMessage('Cores sugeridas com sucesso! Você pode ajustá-las abaixo antes de aplicar.')
             return
@@ -261,7 +256,6 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       setError('')
       setStatusMessage('')
 
-      // CORREÇÃO 3: Envia a logoUrl correta do estado para persistir no banco
       await updateTenantSettings({
         logo_url: logoUrl,
         primary_color: colors.primary,
@@ -272,8 +266,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       })
 
       setStatusMessage('Configurações de branding aplicadas com sucesso!')
-      
-      // Notifica o componente pai (TenantSettings) para recarregar os dados do banco
+
       if (onBrandingApplied) {
         await onBrandingApplied()
       }
@@ -283,19 +276,6 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       setApplying(false)
     }
   }
-
-    setStatusMessage('Configurações de branding aplicadas com sucesso!')
-    
-    //  CORREÇÃO: Executa o callback notificando o pai para recarregar as configurações do banco
-    if (onBrandingApplied) {
-      await onBrandingApplied()
-    }
-  } catch (err) {
-    setError('Erro ao aplicar: ' + err.message)
-  } finally {
-    setApplying(false)
-  }
-}
 
   useEffect(() => {
     return () => {
