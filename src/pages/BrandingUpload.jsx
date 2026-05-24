@@ -398,16 +398,15 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
             </div>
           </div>
         </div>
-
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4">
             <h3 className="text-base font-semibold text-slate-900">Preview visual em tempo real</h3>
             <p className="mt-1 text-xs text-slate-500">Simulação do site público atualizada instantaneamente conforme você edita.</p>
           </div>
-
           <SitePreview colors={colors} logoUrl={logoUrl} localPreview={preview} />
         </div>
       </div>
     </div>
   )
 }
+// Atualizado
