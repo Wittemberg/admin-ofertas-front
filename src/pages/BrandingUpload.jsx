@@ -408,7 +408,11 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
           <SitePreview colors={colors} logoUrl={logoUrl} localPreview={preview} />
         </div>
+        
       </div>
+
     </div>
+
   )
+
 }
