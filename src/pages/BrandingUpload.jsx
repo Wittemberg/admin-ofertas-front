@@ -114,24 +114,22 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
 
-  // Sincroniza o estado apenas se as configurações do tenant mudarem externamente e NÃO houver arquivo local em edição ou salvamento ativo
+  // Sincroniza o estado com as configurações salvas no banco de dados
   useEffect(() => {
-    if (!file && !applying) {
-      if (currentSettings?.primary_color) {
-        setColors({
-          primary: currentSettings.primary_color,
-          secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
-          accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
-          background: currentSettings.background_color || DEFAULT_COLORS.background,
-          text: currentSettings.text_color || DEFAULT_COLORS.text
-        })
-      }
-      if (currentSettings?.logo_url) {
-        setPreview(currentSettings.logo_url)
-        setLogoUrl(currentSettings.logo_url)
-      }
+    if (currentSettings?.primary_color) {
+      setColors({
+        primary: currentSettings.primary_color,
+        secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
+        accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
+        background: currentSettings.background_color || DEFAULT_COLORS.background,
+        text: currentSettings.text_color || DEFAULT_COLORS.text
+      })
     }
-  }, [currentSettings, file, applying])
+    if (currentSettings?.logo_url) {
+      setPreview(currentSettings.logo_url)
+      setLogoUrl(currentSettings.logo_url)
+    }
+  }, [currentSettings])
 
   const fileInputRef = useRef(null)
   const pollRef = useRef(null)
@@ -273,12 +271,13 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
       setStatusMessage('Configurações de branding aplicadas com sucesso!')
 
+      // Atualiza os estados locais imediatamente para evitar "pulos" visuais
+      setPreview(logoUrl)
+      setFile(null)
+
       if (onBrandingApplied) {
         await onBrandingApplied()
       }
-      
-      // Limpa o arquivo local após aplicar com sucesso para permitir que o useEffect sincronize com o banco
-      setFile(null)
     } catch (err) {
       setError('Erro ao aplicar: ' + err.message)
     } finally {
@@ -408,11 +407,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
           <SitePreview colors={colors} logoUrl={logoUrl} localPreview={preview} />
         </div>
-        
       </div>
-
     </div>
-
   )
-
 }
