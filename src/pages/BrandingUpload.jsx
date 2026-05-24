@@ -44,7 +44,6 @@ function SitePreview({ colors, logoUrl, localPreview }) {
     '--brand-text': colors.text
   }), [colors])
 
-  // Prioriza o preview local (Base64 da nova imagem) sobre a URL antiga do banco
   const activeLogo = localPreview || logoUrl
 
   return (
@@ -66,12 +65,7 @@ function SitePreview({ colors, logoUrl, localPreview }) {
       </div>
 
       <div className="bg-[var(--brand-background)] p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-[var(--brand-text)]">Ofertas em destaque</h4>
-          <span className="rounded-full bg-[var(--brand-secondary)] px-2 py-0.5 text-xs font-semibold text-white">
-            Semana
-          </span>
-        </div>
+        <h4 className="text-sm font-semibold text-[var(--brand-text)] mb-2">Ofertas em destaque</h4>
 
         <div className="grid gap-4 grid-cols-2">
           {[1, 2].map((item) => (
@@ -92,18 +86,15 @@ function SitePreview({ colors, logoUrl, localPreview }) {
 }
 
 export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
-  const initialColors = useMemo(() => {
-    if (currentSettings?.primary_color) {
-      return {
-        primary: currentSettings.primary_color,
-        secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
-        accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
-        background: currentSettings.background_color || DEFAULT_COLORS.background,
-        text: currentSettings.text_color || DEFAULT_COLORS.text
-      }
-    }
-    return DEFAULT_COLORS
-  }, [currentSettings])
+
+  // Inicialização segura
+  const initialColors = useMemo(() => ({
+    primary: currentSettings?.primary_color || DEFAULT_COLORS.primary,
+    secondary: currentSettings?.secondary_color || DEFAULT_COLORS.secondary,
+    accent: currentSettings?.accent_color || DEFAULT_COLORS.accent,
+    background: currentSettings?.background_color || DEFAULT_COLORS.background,
+    text: currentSettings?.text_color || DEFAULT_COLORS.text
+  }), [currentSettings])
 
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(currentSettings?.logo_url || null)
@@ -114,38 +105,19 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
 
-  // Sincroniza o estado com as configurações salvas no banco de dados
-  useEffect(() => {
-    if (currentSettings?.primary_color) {
-      setColors({
-        primary: currentSettings.primary_color,
-        secondary: currentSettings.secondary_color || DEFAULT_COLORS.secondary,
-        accent: currentSettings.accent_color || DEFAULT_COLORS.accent,
-        background: currentSettings.background_color || DEFAULT_COLORS.background,
-        text: currentSettings.text_color || DEFAULT_COLORS.text
-      })
-    }
-    if (currentSettings?.logo_url) {
-      setPreview(currentSettings.logo_url)
-      setLogoUrl(currentSettings.logo_url)
-    }
-  }, [currentSettings])
-
   const fileInputRef = useRef(null)
   const pollRef = useRef(null)
 
-  const reset = useCallback(() => {
-    setFile(null)
-    setPreview(null)
-    setLogoUrl(null)
-    setExtracting(false)
-    setApplying(false)
-    setColors(DEFAULT_COLORS)
-    setError('')
-    setStatusMessage('')
-    if (pollRef.current) clearTimeout(pollRef.current)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }, [])
+  // Atualiza conforme o backend retorna
+  useEffect(() => {
+    if (!applying) {
+      if (currentSettings?.logo_url) {
+        setPreview(currentSettings.logo_url)
+        setLogoUrl(currentSettings.logo_url)
+      }
+      setColors(initialColors)
+    }
+  }, [currentSettings, applying, initialColors])
 
   const handleFile = useCallback((selectedFile) => {
     setError('')
@@ -154,36 +126,28 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     if (!selectedFile) return
 
     if (!ALLOWED_TYPES.includes(selectedFile.type)) {
-      setError('Formato inválido. Aceito: PNG, JPG, SVG ou WebP.')
+      setError('Formato inválido. Aceito PNG, JPG, SVG, WebP.')
       return
     }
 
     if (selectedFile.size > MAX_SIZE) {
-      setError('Arquivo muito grande. Máximo 2MB.')
+      setError('Arquivo muito grande. Máx 2MB.')
       return
     }
 
     setFile(selectedFile)
 
     const reader = new FileReader()
-    reader.onload = (event) => {
-      const result = event.target?.result || null
-      setPreview(result) // Define o preview local em Base64 imediatamente
-    }
+    reader.onload = (event) => setPreview(event.target?.result || null)
     reader.readAsDataURL(selectedFile)
   }, [])
 
-  const handleDrop = useCallback((event) => {
-    event.preventDefault()
-    event.stopPropagation()
-    const droppedFile = event.dataTransfer.files?.[0]
-    if (droppedFile) handleFile(droppedFile)
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const dropped = e.dataTransfer.files?.[0]
+    if (dropped) handleFile(dropped)
   }, [handleFile])
-
-  const handleDragOver = useCallback((event) => {
-    event.preventDefault()
-    event.stopPropagation()
-  }, [])
 
   const handleExtractColors = async () => {
     if (!file) return
@@ -203,7 +167,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       let attempts = 0
 
       const poll = async () => {
-        attempts += 1
+        attempts++
 
         try {
           const { data: job } = await getBrandingStatus(jobId)
@@ -211,47 +175,40 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
           if (job.status === 'completed') {
             setColors(job.colors || DEFAULT_COLORS)
 
-            const finalLogoUrl = job.logo_url || data.logo_url
-            if (finalLogoUrl) {
-              setLogoUrl(finalLogoUrl)
+            if (job.logo_url || data.logo_url) {
+              setLogoUrl(job.logo_url || data.logo_url)
             }
 
             setExtracting(false)
-            setStatusMessage('Cores sugeridas com sucesso! Você pode ajustá-las abaixo antes de aplicar.')
+            setStatusMessage('Cores sugeridas com sucesso!')
             return
           }
 
           if (job.status === 'failed') {
+            setError('Falha na extração.')
             setExtracting(false)
-            setError(job.error || 'Falha na extração. Usando paleta padrão.')
             return
           }
 
           if (attempts >= 15) {
+            setError('Tempo limite excedido.')
             setExtracting(false)
-            setError('Tempo limite excedido. Usando paleta padrão.')
             return
           }
 
-          pollRef.current = setTimeout(poll, 2000)
-        } catch (pollErr) {
+          pollRef.current = setTimeout(poll, 1500)
+        } catch (err) {
           setExtracting(false)
-          setError('Erro no polling: ' + pollErr.message)
+          setError('Erro no polling.')
         }
       }
 
       poll()
-    } catch (uploadErr) {
-      setExtracting(false)
-      setError('Erro no upload: ' + uploadErr.message)
-    }
-  }
 
-  const handleColorChange = (key, value) => {
-    setColors(prev => ({
-      ...prev,
-      [key]: value
-    }))
+    } catch (err) {
+      setError('Erro no upload: ' + err.message)
+      setExtracting(false)
+    }
   }
 
   const handleApplyColors = async () => {
@@ -269,27 +226,23 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
         text_color: colors.text
       })
 
-      setStatusMessage('Configurações de branding aplicadas com sucesso!')
-
-      // Atualiza os estados locais imediatamente para evitar "pulos" visuais
+      // mantém o preview APÓS salvar
       setPreview(logoUrl)
-      setFile(null)
+
+      setStatusMessage('Configurações aplicadas com sucesso!')
 
       if (onBrandingApplied) {
         await onBrandingApplied()
       }
+
+      setFile(null)
+
     } catch (err) {
       setError('Erro ao aplicar: ' + err.message)
     } finally {
       setApplying(false)
     }
   }
-
-  useEffect(() => {
-    return () => {
-      if (pollRef.current) clearTimeout(pollRef.current)
-    }
-  }, [])
 
   const dropzoneText = preview
     ? 'Clique para trocar a logo'
@@ -300,113 +253,90 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       <div>
         <h2 className="text-lg font-semibold text-slate-900">🎨 Branding Inteligente com IA</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Envie a logomarca do supermercado para sugerir a paleta de cores. Você pode personalizar os valores gerados livremente.
+          Envie a logomarca do supermercado e edite a paleta extraída.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-4">
-              <h3 className="text-base font-semibold text-slate-900">Upload da logo</h3>
-              <p className="mt-1 text-xs text-slate-500">Formatos aceitos: PNG, JPG, SVG e WebP. Máximo: 2MB.</p>
-            </div>
 
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onClick={() => fileInputRef.current?.click()}
-              className="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center transition hover:border-blue-400 hover:bg-blue-50"
-            >
-              {preview ? (
-                <div className="flex flex-col items-center gap-4">
-                  <img src={preview} alt="Preview" className="max-h-40 w-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm object-contain" />
-                  <p className="text-xs font-medium text-slate-700">{file?.name || 'Logo Selecionada'}</p>
-                  <p className="text-xs text-slate-400">{dropzoneText}</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="mx-auto flex h-12 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-700">↑</div>
-                  <p className="text-xs font-medium text-slate-700">{dropzoneText}</p>
-                  <p className="text-xs text-slate-400">A paleta será sugerida automaticamente após o upload.</p>
-                </div>
-              )}
+        {/* UPLOAD */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
-                onChange={(event) => handleFile(event.target.files?.[0])}
-              />
-            </div>
-
-            {error && (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
-                {error}
-              </div>
-            )}
-
-            {statusMessage && (
-              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
-                {statusMessage}
-              </div>
-            )}
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button
-                onClick={handleExtractColors}
-                disabled={!file || extracting}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {extracting ? 'Extraindo...' : 'Sugerir cores com IA'}
-              </button>
-
-              <button
-                onClick={handleApplyColors}
-                disabled={extracting || applying}
-                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {applying ? 'Aplicando...' : 'Aplicar cores'}
-              </button>
-
-              <button
-                onClick={reset}
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Regenerar
-              </button>
-            </div>
-
-            {extracting && (
-              <p className="mt-4 text-xs text-slate-500">Aguarde, extraindo cores... (até 30s)</p>
-            )}
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-slate-900">Upload da logo</h3>
+            <p className="text-xs text-slate-500">PNG, JPG, SVG, WebP. Máx 2MB.</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-4">
-              <h3 className="text-base font-semibold text-slate-900">Paleta de Cores (Editável)</h3>
-              <p className="mt-1 text-xs text-slate-500">Ajuste os seletores ou digite os códigos hexadecimais diretamente.</p>
-            </div>
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center hover:border-blue-400 hover:bg-blue-50"
+          >
+            {preview ? (
+              <div className="flex flex-col items-center gap-4">
+                <img src={preview} alt="Preview" className="max-h-40 w-auto rounded-xl border bg-white p-3 shadow-sm object-contain" />
+                <p className="text-xs text-slate-700">{file?.name || 'Logo carregada'}</p>
+                <p className="text-xs text-slate-400">{dropzoneText}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="mx-auto flex h-12 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-700">↑</div>
+                <p className="text-xs font-medium text-slate-700">{dropzoneText}</p>
+                <p className="text-xs text-slate-400">A paleta será sugerida automaticamente.</p>
+              </div>
+            )}
 
-            <div className="space-y-3">
-              <EditableColorRow label="Primary (Cor Principal)" color={colors.primary} onChange={(val) => handleColorChange('primary', val)} />
-              <EditableColorRow label="Secondary (Cor Secundária)" color={colors.secondary} onChange={(val) => handleColorChange('secondary', val)} />
-              <EditableColorRow label="Accent (Destaques)" color={colors.accent} onChange={(val) => handleColorChange('accent', val)} />
-              <EditableColorRow label="Background (Fundo)" color={colors.background} onChange={(val) => handleColorChange('background', val)} />
-              <EditableColorRow label="Text (Texto)" color={colors.text} onChange={(val) => handleColorChange('text', val)} />
-            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+              onChange={(e) => handleFile(e.target.files?.[0])}
+            />
+          </div>
+
+          {error && <div className="mt-3 text-xs text-red-600">{error}</div>}
+          {statusMessage && <div className="mt-3 text-xs text-green-600">{statusMessage}</div>}
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              onClick={handleExtractColors}
+              disabled={!file || extracting}
+              className="rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:bg-slate-400"
+            >
+              {extracting ? 'Extraindo...' : 'Sugerir cores com IA'}
+            </button>
+
+            <button
+              onClick={handleApplyColors}
+              disabled={extracting || applying}
+              className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-slate-400"
+            >
+              {applying ? 'Aplicando...' : 'Aplicar cores'}
+            </button>
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4">
-            <h3 className="text-base font-semibold text-slate-900">Preview visual em tempo real</h3>
-            <p className="mt-1 text-xs text-slate-500">Simulação do site público atualizada instantaneamente conforme você edita.</p>
-          </div>
+
+        {/* CORES */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
+          <h3 className="text-base font-semibold text-slate-900 mb-2">Paleta de Cores</h3>
+
+          <EditableColorRow label="Primary" color={colors.primary} onChange={v => setColors({ ...colors, primary: v })} />
+          <EditableColorRow label="Secondary" color={colors.secondary} onChange={v => setColors({ ...colors, secondary: v })} />
+          <EditableColorRow label="Accent" color={colors.accent} onChange={v => setColors({ ...colors, accent: v })} />
+          <EditableColorRow label="Background" color={colors.background} onChange={v => setColors({ ...colors, background: v })} />
+          <EditableColorRow label="Text" color={colors.text} onChange={v => setColors({ ...colors, text: v })} />
+        </div>
+
+        {/* PREVIEW */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm col-span-2 lg:col-span-1">
+          <h3 className="text-base font-semibold text-slate-900 mb-3">Preview visual em tempo real</h3>
           <SitePreview colors={colors} logoUrl={logoUrl} localPreview={preview} />
         </div>
       </div>
     </div>
   )
 }
-// Atualizado
+
+// *Atualizado*
