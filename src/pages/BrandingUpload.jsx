@@ -411,4 +411,5 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       </div>
     </div>
   )
+  
 }
