@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
-import { uploadTenantBranding, getBrandingStatus, updateTenantSettings } from '../api/tenant'
+import { uploadTenantBranding, updateTenantSettings } from '../api/tenant'
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp']
 const MAX_SIZE = 2 * 1024 * 1024
@@ -12,7 +12,7 @@ const DEFAULT_COLORS = {
   text: '#0f172a'
 }
 
-/* ----------------------- Input de Cores ----------------------- */
+/* ----------------------- Componente do input de cor ----------------------- */
 function EditableColorRow({ label, color, onChange }) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
@@ -31,23 +31,25 @@ function EditableColorRow({ label, color, onChange }) {
         value={color}
         onChange={(e) => onChange(e.target.value)}
         maxLength={7}
-        className="font-mono text-sm text-slate-600 border border-slate-200 rounded-lg px-2 py-1 w-24 text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="font-mono text-sm text-slate-600 border border-slate-200 rounded-lg px-2 py-1 w-24 text-right"
       />
     </div>
   )
 }
 
-/* ----------------------- Preview do Site ----------------------- */
+/* ----------------------- Preview visual ----------------------- */
 function SitePreview({ colors, logoUrl, localPreview }) {
-  const previewVars = useMemo(() => ({
-    '--brand-primary': colors.primary,
-    '--brand-secondary': colors.secondary,
-    '--brand-accent': colors.accent,
-    '--brand-background': colors.background,
-    '--brand-text': colors.text
-  }), [colors])
+  const previewVars = useMemo(
+    () => ({
+      '--brand-primary': colors.primary,
+      '--brand-secondary': colors.secondary,
+      '--brand-accent': colors.accent,
+      '--brand-background': colors.background,
+      '--brand-text': colors.text
+    }),
+    [colors]
+  )
 
-  // Regra de precedência: preview local → logoUrl remoto
   const activeLogo = localPreview || logoUrl
 
   return (
@@ -69,6 +71,7 @@ function SitePreview({ colors, logoUrl, localPreview }) {
               LOGO
             </div>
           )}
+
           <div>
             <p className="text-xs text-white/80">Preview do site</p>
             <h3 className="text-base font-semibold text-white">Minha Loja</h3>
@@ -79,16 +82,13 @@ function SitePreview({ colors, logoUrl, localPreview }) {
       {/* Conteúdo */}
       <div className="bg-[var(--brand-background)] p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-[var(--brand-text)]">
-            Ofertas em destaque
-          </h4>
+          <h4 className="text-sm font-semibold text-[var(--brand-text)]">Ofertas em destaque</h4>
 
           <span className="rounded-full bg-[var(--brand-secondary)] px-2 py-0.5 text-xs font-semibold text-white">
             Semana
           </span>
         </div>
 
-        {/* Cards */}
         <div className="grid gap-4 grid-cols-2">
           {[1, 2].map((item) => (
             <div
@@ -96,10 +96,9 @@ function SitePreview({ colors, logoUrl, localPreview }) {
               className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
             >
               <div className="bg-[var(--brand-accent)] p-4" />
+
               <div className="space-y-1 p-3">
-                <p className="text-xs font-semibold text-[var(--brand-text)]">
-                  Produto {item}
-                </p>
+                <p className="text-xs font-semibold text-[var(--brand-text)]">Produto {item}</p>
                 <p className="text-sm font-bold text-[var(--brand-secondary)]">
                   {item === 1 ? 'R$ 99,90' : 'R$ 149,90'}
                 </p>
@@ -114,81 +113,68 @@ function SitePreview({ colors, logoUrl, localPreview }) {
 
 /* ----------------------- Componente Principal ----------------------- */
 export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
-  // INPUT AUTOMÁTICO DAS CORES
-  const initialColors = useMemo(() => ({
-    primary: currentSettings?.primary_color || DEFAULT_COLORS.primary,
-    secondary: currentSettings?.secondary_color || DEFAULT_COLORS.secondary,
-    accent: currentSettings?.accent_color || DEFAULT_COLORS.accent,
-    background: currentSettings?.background_color || DEFAULT_COLORS.background,
-    text: currentSettings?.text_color || DEFAULT_COLORS.text
-  }), [currentSettings])
+  const initialColors = useMemo(
+    () => ({
+      primary: currentSettings?.primary_color || DEFAULT_COLORS.primary,
+      secondary: currentSettings?.secondary_color || DEFAULT_COLORS.secondary,
+      accent: currentSettings?.accent_color || DEFAULT_COLORS.accent,
+      background: currentSettings?.background_color || DEFAULT_COLORS.background,
+      text: currentSettings?.text_color || DEFAULT_COLORS.text
+    }),
+    [currentSettings]
+  )
 
-  // ESTADOS INTERNOS
   const [file, setFile] = useState(null)
-  const [preview, setPreview] = useState(null) // preview local
-  const [logoUrl, setLogoUrl] = useState(null) // url remota real
+  const [preview, setPreview] = useState(null)
+  const [logoUrl, setLogoUrl] = useState(null)
   const [extracting, setExtracting] = useState(false)
   const [applying, setApplying] = useState(false)
   const [colors, setColors] = useState(initialColors)
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
 
-  const pollRef = useRef(null)
   const fileInputRef = useRef(null)
 
-  /* ----------------------- SINCRONIZAÇÃO DO BACKEND ----------------------- */
+  /* ----------------------- Sincronizar settings do backend ----------------------- */
   useEffect(() => {
     if (!currentSettings) return
 
     const remoteLogo = currentSettings.logo_url
-      ? `${currentSettings.logo_url}?t=${Date.now()}` // cache bust
+      ? `${currentSettings.logo_url}?t=${Date.now()}`
       : null
 
     setLogoUrl(remoteLogo)
 
-    // NÃO APAGAR PREVIEW quando tenant estiver carregando
-    if (!file && !extracting && !applying) {
-      setPreview(remoteLogo)
-    }
+    if (!file) setPreview(remoteLogo)
 
     setColors(initialColors)
   }, [currentSettings, initialColors])
 
-  /* ----------------------- TRATAMENTO DE IMAGEM LOCAL ----------------------- */
-  const handleFile = useCallback((selectedFile) => {
+  /* ----------------------- Seleção / Drag & Drop ----------------------- */
+  const handleFile = useCallback((selected) => {
     setError('')
     setStatusMessage('')
 
-    if (!selectedFile) return
+    if (!selected) return
 
-    if (!ALLOWED_TYPES.includes(selectedFile.type)) {
+    if (!ALLOWED_TYPES.includes(selected.type)) {
       setError('Formato inválido. Aceito PNG, JPG, SVG, WebP.')
       return
     }
 
-    if (selectedFile.size > MAX_SIZE) {
+    if (selected.size > MAX_SIZE) {
       setError('Arquivo muito grande. Máximo 2MB.')
       return
     }
 
-    setFile(selectedFile)
+    setFile(selected)
 
-    // Preview local (Base64)
     const reader = new FileReader()
     reader.onload = (event) => setPreview(event.target?.result || null)
-    reader.readAsDataURL(selectedFile)
+    reader.readAsDataURL(selected)
   }, [])
 
-  /* ----------------------- ARRASTAR E SOLTAR ----------------------- */
-  const handleDrop = useCallback((e) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    const dropped = e.dataTransfer.files?.[0]
-    if (dropped) handleFile(dropped)
-  }, [handleFile])
-
-  /* ----------------------- SUGERIR CORES COM IA ----------------------- */
+  /* ----------------------- Fluxo Síncrono da IA ----------------------- */
   const handleExtractColors = async () => {
     if (!file) return
 
@@ -198,72 +184,29 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
     try {
       const { data } = await uploadTenantBranding(file)
-      const jobId = data.job_id
 
-      // Atualiza logoUrl parcial
-      if (data.logo_url) {
-        setLogoUrl(`${data.logo_url}?t=${Date.now()}`)
-      }
+      setColors(data.palette)
+      setLogoUrl(`${data.logo_url}?t=${Date.now()}`)
+      setPreview(`${data.logo_url}?t=${Date.now()}`)
 
-      let attempts = 0
+      setStatusMessage('Cores extraídas com sucesso!')
 
-      const poll = async () => {
-        attempts++
-
-        try {
-          const { data: job } = await getBrandingStatus(jobId)
-
-          if (job.status === 'completed') {
-            setColors(job.colors)
-
-            const remote = job.logo_url
-              ? `${job.logo_url}?t=${Date.now()}`
-              : logoUrl
-
-            setLogoUrl(remote)
-            setPreview((p) => p || remote)
-
-            setExtracting(false)
-            setStatusMessage('Cores sugeridas com sucesso!')
-            return
-          }
-
-          if (job.status === 'failed') {
-            setError('Falha na extração de cores.')
-            setExtracting(false)
-            return
-          }
-
-          if (attempts >= 15) {
-            setError('Tempo limite excedido.')
-            setExtracting(false)
-            return
-          }
-
-          pollRef.current = setTimeout(poll, 1500)
-        } catch {
-          setError('Erro ao consultar status do job.')
-          setExtracting(false)
-        }
-      }
-
-      poll()
     } catch (err) {
-      setError('Erro no upload: ' + err.message)
+      setError(err.response?.data?.error || 'Erro ao processar branding')
+    } finally {
       setExtracting(false)
     }
   }
 
-  /* ----------------------- APLICAR CORES E LOGO ----------------------- */
+  /* ----------------------- Aplicar manualmente ----------------------- */
   const handleApplyColors = async () => {
     setApplying(true)
     setError('')
     setStatusMessage('')
 
     try {
-      const finalUrl = preview?.startsWith('data:')
-        ? logoUrl // preview local → usar logo real
-        : preview // preview remoto
+      const finalUrl =
+        preview?.startsWith('data:') ? logoUrl : preview
 
       await updateTenantSettings({
         logo_url: finalUrl,
@@ -274,30 +217,25 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
         text_color: colors.text
       })
 
-      setPreview(`${finalUrl}?t=${Date.now()}`)
-      setLogoUrl(`${finalUrl}?t=${Date.now()}`)
-
-      if (onBrandingApplied) {
-        await onBrandingApplied()
-      }
-
       setStatusMessage('Configurações aplicadas com sucesso!')
+
+      if (onBrandingApplied) await onBrandingApplied()
+
     } catch (err) {
-      setError('Erro ao aplicar: ' + err.message)
+      setError(err.response?.data?.error || 'Erro ao aplicar configurações')
     } finally {
       setApplying(false)
       setFile(null)
     }
   }
 
-  /* ----------------------- INTERFACE ----------------------- */
   const dropzoneText = preview
     ? 'Clique para trocar a logo'
     : 'Arraste sua logo aqui ou clique para selecionar'
 
+  /* ----------------------- Interface ----------------------- */
   return (
     <div className="space-y-6">
-
       <div>
         <h2 className="text-lg font-semibold text-slate-900">🎨 Branding Inteligente com IA</h2>
         <p className="mt-1 text-sm text-slate-500">
@@ -306,6 +244,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        
         {/* Upload */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
@@ -315,11 +254,11 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
           </div>
 
           <div
-            onDrop={handleDrop}
-            onDragOver={(e) => {
+            onDrop={(e) => {
               e.preventDefault()
-              e.stopPropagation()
+              handleFile(e.dataTransfer.files?.[0])
             }}
+            onDragOver={(e) => e.preventDefault()}
             onClick={() => fileInputRef.current?.click()}
             className="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center hover:border-blue-400 hover:bg-blue-50"
           >
@@ -330,7 +269,11 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
                   alt="Preview"
                   className="max-h-40 w-auto rounded-xl border bg-white p-3 shadow-sm object-contain"
                 />
-                <p className="text-xs text-slate-700">{file?.name || 'Logo carregada'}</p>
+
+                <p className="text-xs text-slate-700">
+                  {file?.name || 'Logo carregada'}
+                </p>
+
                 <p className="text-xs text-slate-400">{dropzoneText}</p>
               </div>
             ) : (
@@ -339,7 +282,9 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
                   ↑
                 </div>
                 <p className="text-xs font-medium text-slate-700">{dropzoneText}</p>
-                <p className="text-xs text-slate-400">A paleta será sugerida automaticamente.</p>
+                <p className="text-xs text-slate-400">
+                  A paleta será sugerida automaticamente.
+                </p>
               </div>
             )}
 
@@ -347,8 +292,8 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
               ref={fileInputRef}
               type="file"
               className="hidden"
-              accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
-              onChange={(event) => handleFile(event.target.files?.[0])}
+              accept={ALLOWED_TYPES.join(',')}
+              onChange={(e) => handleFile(e.target.files?.[0])}
             />
           </div>
 
@@ -363,7 +308,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
               disabled={!file || extracting}
               className="rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:bg-slate-400"
             >
-              {extracting ? 'Extraindo...' : 'Sugerir cores com IA'}
+              {extracting ? 'Processando...' : 'Gerar paleta com IA'}
             </button>
 
             <button
@@ -371,33 +316,57 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
               disabled={extracting || applying}
               className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:bg-slate-400"
             >
-              {applying ? 'Aplicando...' : 'Aplicar cores'}
+              {applying ? 'Salvando...' : 'Aplicar configurações'}
             </button>
           </div>
         </div>
 
         {/* Paleta */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
-          <h3 className="text-base font-semibold text-slate-900 mb-2">
-            Paleta de Cores
-          </h3>
+          <h3 className="text-base font-semibold text-slate-900 mb-2">Paleta de cores</h3>
 
-          <EditableColorRow label="Primary" color={colors.primary} onChange={(v) => setColors({ ...colors, primary: v })} />
-          <EditableColorRow label="Secondary" color={colors.secondary} onChange={(v) => setColors({ ...colors, secondary: v })} />
-          <EditableColorRow label="Accent" color={colors.accent} onChange={(v) => setColors({ ...colors, accent: v })} />
-          <EditableColorRow label="Background" color={colors.background} onChange={(v) => setColors({ ...colors, background: v })} />
-          <EditableColorRow label="Text" color={colors.text} onChange={(v) => setColors({ ...colors, text: v })} />
+          <EditableColorRow
+            label="Primary"
+            color={colors.primary}
+            onChange={(v) => setColors({ ...colors, primary: v })}
+          />
+
+          <EditableColorRow
+            label="Secondary"
+            color={colors.secondary}
+            onChange={(v) => setColors({ ...colors, secondary: v })}
+          />
+
+          <EditableColorRow
+            label="Accent"
+            color={colors.accent}
+            onChange={(v) => setColors({ ...colors, accent: v })}
+          />
+
+          <EditableColorRow
+            label="Background"
+            color={colors.background}
+            onChange={(v) => setColors({ ...colors, background: v })}
+          />
+
+          <EditableColorRow
+            label="Text"
+            color={colors.text}
+            onChange={(v) => setColors({ ...colors, text: v })}
+          />
         </div>
 
         {/* Preview */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm col-span-2 lg:col-span-1">
-          <h3 className="text-base font-semibold text-slate-900 mb-3">
-            Preview visual
-          </h3>
-          <SitePreview colors={colors} logoUrl={logoUrl} localPreview={preview} />
+          <h3 className="text-base font-semibold text-slate-900 mb-3">Preview visual</h3>
+
+          <SitePreview
+            colors={colors}
+            logoUrl={logoUrl}
+            localPreview={preview}
+          />
         </div>
       </div>
     </div>
   )
 }
-// *Novo Atualizado*
