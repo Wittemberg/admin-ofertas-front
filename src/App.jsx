@@ -9,7 +9,7 @@ import Stores from './pages/Stores'
 import Categories from './pages/Categories'
 import Reports from './pages/Reports'
 import ApiKeys from './pages/ApiKeys'
-import TenantSettings from './pages/TenantSettings'
+// import TenantSettings from './pages/TenantSettings'
 import SuperAdminConfig from './pages/super-admin/SuperAdminConfig'
 import SuperAdminAudit from './pages/super-admin/SuperAdminAudit'
 
