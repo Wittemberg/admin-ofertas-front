@@ -9,6 +9,10 @@ const DEFAULT_FORM = {
   contact_phone: '',
   contact_email: '',
   contact_whatsapp: '',
+  orders_enabled: false,
+  order_email: '',
+  order_whatsapp: '',
+  order_whatsapp_message_template: '',
   address_street: '',
   address_number: '',
   address_city: '',
@@ -40,6 +44,10 @@ export default function TenantSettings() {
         contact_phone: data.contact_phone || '',
         contact_email: data.contact_email || '',
         contact_whatsapp: data.contact_whatsapp || '',
+        orders_enabled: Boolean(data.orders_enabled),
+        order_email: data.order_email || '',
+        order_whatsapp: data.order_whatsapp || '',
+        order_whatsapp_message_template: data.order_whatsapp_message_template || '',
         address_street: data.address_street || '',
         address_number: data.address_number || '',
         address_city: data.address_city || '',
@@ -132,6 +140,36 @@ export default function TenantSettings() {
               <Field label="Telefone" value={form.contact_phone} onChange={value => updateField('contact_phone', value)} />
               <Field label="E-mail" type="email" value={form.contact_email} onChange={value => updateField('contact_email', value)} />
               <Field label="WhatsApp" value={form.contact_whatsapp} onChange={value => updateField('contact_whatsapp', value)} />
+            </div>
+          </section>
+
+          <section>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Pedidos e lista de ofertas</h2>
+                <p className="text-sm text-slate-500">Ative para o site publico permitir lista de compras, carrinho abandonado e envio por e-mail/WhatsApp.</p>
+              </div>
+              <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={form.orders_enabled}
+                  onChange={event => updateField('orders_enabled', event.target.checked)}
+                  className="h-4 w-4"
+                />
+                Ativar pedidos
+              </label>
+            </div>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Field label="E-mail para receber pedidos" type="email" value={form.order_email} onChange={value => updateField('order_email', value)} placeholder="pedidos@empresa.com.br" />
+              <Field label="WhatsApp para receber pedidos" value={form.order_whatsapp} onChange={value => updateField('order_whatsapp', value)} placeholder="5547999990000" />
+              <Field
+                label="Mensagem padrao do WhatsApp"
+                value={form.order_whatsapp_message_template}
+                onChange={value => updateField('order_whatsapp_message_template', value)}
+                className="md:col-span-2"
+                placeholder="Opcional. O sistema monta uma mensagem automaticamente se ficar em branco."
+                multiline
+              />
             </div>
           </section>
 

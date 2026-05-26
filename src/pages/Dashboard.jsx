@@ -1,67 +1,27 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getProducts } from '../api/products'
-import { getStores } from '../api/stores'
-import { getCategories } from '../api/categories'
-import { getOffers } from '../api/offers'
+import { getDashboardMetrics } from '../api/dashboard'
 
 export default function Dashboard() {
   const { user, setUser } = useAuth()
   const [stats, setStats] = useState({
     products: 0, stores: 0, categories: 0, offers: 0, featuredOffers: 0,
-    offersByStore: [], productsByCategory: []
+    offersByStore: [], productsByCategory: [], ordersMetrics: null
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([
-      getProducts({ limit: 1 }),
-      getStores(),
-      getCategories({ limit: 1 }),
-      getOffers({ limit: 200 })
-    ]).then(([productsRes, storesRes, categoriesRes, offersRes]) => {
-      const products = productsRes.data
-      const stores = storesRes.data || storesRes
-      const categories = categoriesRes.data
-      const offers = offersRes.data
-
-      const productList = products.products || []
-      const offerList = offers.offers || []
-      const categoryList = categories.categories || []
-
-      const totalProducts = products.total || productList.length
-      const totalStores = Array.isArray(stores) ? stores.length : (stores.stores || []).length
-      const totalCategories = categories.total || categoryList.length
-      const totalOffers = offers.total || offerList.length
-      const featuredCount = offerList.filter(o => o.is_featured).length
-
-      const storeCount = {}
-      offerList.forEach(o => {
-        const name = o.store?.name || 'Sem loja'
-        storeCount[name] = (storeCount[name] || 0) + 1
-      })
-      const offersByStore = Object.entries(storeCount)
-        .map(([store_name, count]) => ({ store_name, count }))
-        .sort((a, b) => b.count - a.count)
-
-      const catCount = { 'Sem categoria': 0 }
-      productList.forEach(p => {
-        const name = p.category?.name || 'Sem categoria'
-        catCount[name] = (catCount[name] || 0) + 1
-      })
-      const productsByCategory = Object.entries(catCount)
-        .map(([category_name, count]) => ({ category_name, count }))
-        .sort((a, b) => b.count - a.count)
-
+    getDashboardMetrics().then(({ data }) => {
       setStats({
-        products: totalProducts,
-        stores: totalStores,
-        categories: totalCategories,
-        offers: totalOffers,
-        featuredOffers: featuredCount,
-        offersByStore,
-        productsByCategory
+        products: data.products || 0,
+        stores: data.stores || 0,
+        categories: data.categories || 0,
+        offers: data.offers || 0,
+        featuredOffers: data.featuredOffers || 0,
+        offersByStore: data.offers_by_store || [],
+        productsByCategory: data.products_by_category || [],
+        ordersMetrics: data.orders_metrics || null
       })
     }).catch(console.error)
     .finally(() => setLoading(false))
@@ -128,6 +88,59 @@ export default function Dashboard() {
             )}
           </a>
         </div>
+
+        {stats.ordersMetrics && (
+          <div className="mb-8 rounded-lg bg-white p-6 shadow">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="text-lg font-semibold">Pedidos e listas</h2>
+                <p className="text-sm text-gray-500">Indicadores de carrinho e intencao de compra em tempo quase real.</p>
+              </div>
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">Atualiza ao recarregar o dashboard</span>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              <Metric label="Carrinhos ativos agora" value={stats.ordersMetrics.carts_active_now || 0} color="text-blue-600" />
+              <Metric label="Carrinhos abandonados hoje" value={stats.ordersMetrics.carts_abandoned_today || 0} color="text-orange-600" />
+              <Metric label="Pedidos hoje" value={stats.ordersMetrics.orders_today || 0} color="text-emerald-600" />
+              <Metric label="Conversao hoje" value={`${stats.ordersMetrics.conversion_rate || 0}%`} color="text-purple-600" />
+            </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <div>
+                <h3 className="mb-3 text-sm font-semibold text-gray-700">Ultimos pedidos</h3>
+                {(stats.ordersMetrics.latest_orders || []).length === 0 ? (
+                  <p className="text-sm text-gray-400">Nenhum pedido recente.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {stats.ordersMetrics.latest_orders.map(order => (
+                      <div key={order.id} className="rounded-lg border border-gray-100 p-3 text-sm">
+                        <div className="flex justify-between gap-2">
+                          <span className="font-medium text-gray-900">{order.customer_name}</span>
+                          <span className="text-gray-500">{order.status}</span>
+                        </div>
+                        <div className="text-gray-500">{order.customer_phone}{order.store_name ? ` - ${order.store_name}` : ''}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="mb-3 text-sm font-semibold text-gray-700">Produtos mais pedidos hoje</h3>
+                {(stats.ordersMetrics.top_order_items || []).length === 0 ? (
+                  <p className="text-sm text-gray-400">Ainda sem itens em pedidos hoje.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {stats.ordersMetrics.top_order_items.map(item => (
+                      <div key={item.product_name} className="flex justify-between rounded-lg border border-gray-100 p-3 text-sm">
+                        <span className="text-gray-700">{item.product_name}</span>
+                        <span className="font-semibold">{item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -222,6 +235,15 @@ export default function Dashboard() {
           </a>
         </div>
       </div>
+    </div>
+  )
+}
+
+function Metric({ label, value, color }) {
+  return (
+    <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+      <div className={`text-2xl font-bold ${color}`}>{value}</div>
+      <div className="mt-1 text-sm text-gray-500">{label}</div>
     </div>
   )
 }
