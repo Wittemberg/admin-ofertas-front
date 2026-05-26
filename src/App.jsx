@@ -10,8 +10,10 @@ import Categories from './pages/Categories'
 import Reports from './pages/Reports'
 import ApiKeys from './pages/ApiKeys'
 import TenantSettings from './pages/TenantSettings'
+import ChangePassword from './pages/ChangePassword'
 import SuperAdminConfig from './pages/super-admin/SuperAdminConfig'
 import SuperAdminAudit from './pages/super-admin/SuperAdminAudit'
+import SuperAdminClients from './pages/super-admin/SuperAdminClients'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -33,6 +35,7 @@ function App() {
           <Route path="/categorias" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
           <Route path="/relatorios" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
+          <Route path="/alterar-senha" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           
           {/* Rota canônica de configurações */}
           <Route path="/configuracoes" element={<ProtectedRoute><TenantSettings /></ProtectedRoute>} />
@@ -43,6 +46,7 @@ function App() {
           
           {/* Super Admin */}
           <Route path="/super-admin/configuracoes" element={<ProtectedRoute><SuperAdminConfig /></ProtectedRoute>} />
+          <Route path="/super-admin/clientes" element={<ProtectedRoute><SuperAdminClients /></ProtectedRoute>} />
           <Route path="/super-admin/auditoria" element={<ProtectedRoute><SuperAdminAudit /></ProtectedRoute>} />
           
           <Route path="*" element={<Navigate to="/login" />} />

@@ -205,6 +205,11 @@ export default function Dashboard() {
             <div className="text-lg">🔑</div>
             <div className="text-sm font-medium mt-1">API Keys</div>
           </a>
+          <a href="/alterar-senha"
+            className="bg-sky-50 text-sky-700 rounded-lg p-4 text-center hover:bg-sky-100 transition">
+            <div className="text-lg">Senha</div>
+            <div className="text-sm font-medium mt-1">Alterar Senha</div>
+          </a>
           <a href="/importar"
             className="bg-orange-50 text-orange-700 rounded-lg p-4 text-center hover:bg-orange-100 transition">
             <div className="text-lg">📥</div>

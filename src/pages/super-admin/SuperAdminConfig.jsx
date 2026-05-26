@@ -248,6 +248,13 @@ export default function SuperAdminConfig() {
 
           <div className="flex flex-wrap gap-3">
             <button
+              onClick={() => navigate('/super-admin/clientes')}
+              className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+            >
+              Clientes
+            </button>
+
+            <button
               onClick={handleReload}
               className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
