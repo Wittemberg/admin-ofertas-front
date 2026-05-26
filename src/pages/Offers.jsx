@@ -234,7 +234,10 @@ export default function Offers() {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('pt-BR')
+    const [datePart] = String(dateStr).split('T')
+    const [year, month, day] = datePart.split('-')
+    if (!year || !month || !day) return '-'
+    return `${day}/${month}/${year}`
   }
 
   return (
