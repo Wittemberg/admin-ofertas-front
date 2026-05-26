@@ -10,6 +10,13 @@ const tabs = [
 ARZ001,7891234567890,Arroz 5kg,Mercearia,25.90,19.90,UN,campo-grande,2026-05-13,2026-05-20,true`
   },
   {
+    id: 'products',
+    label: 'Importar Produtos',
+    endpoint: '/imports/products',
+    format: `internal_code,barcode,name,description,category_slug,unit,image_url,is_active
+ARZ001,7891234567890,Arroz 5kg,Arroz tipo 1 pacote 5kg,mercearia,UN,https://exemplo.com/arroz.jpg,true`
+  },
+  {
     id: 'stores',
     label: 'Importar Filiais',
     endpoint: '/imports/stores',
