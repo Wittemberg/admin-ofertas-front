@@ -18,6 +18,17 @@ function withCacheBust(url) {
   return `${url}${separator}t=${Date.now()}`
 }
 
+function withoutCacheBust(url) {
+  if (!url) return null
+  try {
+    const parsed = new URL(url)
+    parsed.searchParams.delete('t')
+    return parsed.toString()
+  } catch {
+    return url.split('?t=')[0].split('&t=')[0]
+  }
+}
+
 /* ----------------------- Componente do input de cor ----------------------- */
 function EditableColorRow({ label, color, onChange }) {
   return (
@@ -133,6 +144,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [logoUrl, setLogoUrl] = useState(null)
+  const [logoUrlRaw, setLogoUrlRaw] = useState(null)
   const [extracting, setExtracting] = useState(false)
   const [applying, setApplying] = useState(false)
   const [colors, setColors] = useState(initialColors)
@@ -145,8 +157,10 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   useEffect(() => {
     if (!currentSettings) return
 
-    const remoteLogo = withCacheBust(currentSettings.logo_url)
+    const cleanLogo = withoutCacheBust(currentSettings.logo_url)
+    const remoteLogo = withCacheBust(cleanLogo)
 
+    setLogoUrlRaw(cleanLogo)
     setLogoUrl(remoteLogo)
 
     if (!file) setPreview(remoteLogo)
@@ -189,9 +203,11 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     try {
       const { data } = await uploadTenantBranding(file)
 
-      const remoteLogo = withCacheBust(data.logo_url)
+      const cleanLogo = withoutCacheBust(data.logo_url)
+      const remoteLogo = withCacheBust(cleanLogo)
 
       setColors(data.palette)
+      setLogoUrlRaw(cleanLogo)
       setLogoUrl(remoteLogo)
       setPreview(current => current || remoteLogo)
 
@@ -212,7 +228,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
     try {
       const finalUrl =
-        preview?.startsWith('data:') ? logoUrl : preview
+        preview?.startsWith('data:') ? logoUrlRaw : withoutCacheBust(preview)
 
       await updateTenantSettings({
         logo_url: finalUrl,
