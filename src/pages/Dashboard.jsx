@@ -4,14 +4,25 @@ import { getDashboardMetrics } from '../api/dashboard'
 
 export default function Dashboard() {
   const { user, setUser } = useAuth()
+  const defaultOrderMetrics = {
+    carts_active_now: 0,
+    carts_abandoned_today: 0,
+    orders_today: 0,
+    carts_started_today: 0,
+    conversion_rate: 0,
+    latest_orders: [],
+    top_order_items: []
+  }
   const [stats, setStats] = useState({
     products: 0, stores: 0, categories: 0, offers: 0, featuredOffers: 0,
-    offersByStore: [], productsByCategory: [], ordersMetrics: null
+    offersByStore: [], productsByCategory: [], ordersMetrics: defaultOrderMetrics
   })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setLoading(true)
+    setError('')
     getDashboardMetrics().then(({ data }) => {
       setStats({
         products: data.products || 0,
@@ -21,9 +32,12 @@ export default function Dashboard() {
         featuredOffers: data.featuredOffers || 0,
         offersByStore: data.offers_by_store || [],
         productsByCategory: data.products_by_category || [],
-        ordersMetrics: data.orders_metrics || null
+        ordersMetrics: data.orders_metrics || defaultOrderMetrics
       })
-    }).catch(console.error)
+    }).catch(err => {
+      console.error(err)
+      setError(err.response?.data?.error || 'Erro ao carregar dashboard')
+    })
     .finally(() => setLoading(false))
   }, [])
 
@@ -67,6 +81,12 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {error && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <a href="/produtos" className="bg-white rounded-lg shadow p-6 hover:shadow-md transition cursor-pointer">
             <div className="text-3xl font-bold text-blue-600">{stats.products}</div>
@@ -89,58 +109,61 @@ export default function Dashboard() {
           </a>
         </div>
 
-        {stats.ordersMetrics && (
-          <div className="mb-8 rounded-lg bg-white p-6 shadow">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h2 className="text-lg font-semibold">Pedidos e listas</h2>
-                <p className="text-sm text-gray-500">Indicadores de carrinho e intencao de compra em tempo quase real.</p>
-              </div>
-              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">Atualiza ao recarregar o dashboard</span>
+        <div className="mb-8 rounded-lg bg-white p-6 shadow">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-semibold">Pedidos e listas</h2>
+              <p className="text-sm text-gray-500">Indicadores de carrinho e intencao de compra em tempo quase real.</p>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-              <Metric label="Carrinhos ativos agora" value={stats.ordersMetrics.carts_active_now || 0} color="text-blue-600" />
-              <Metric label="Carrinhos abandonados hoje" value={stats.ordersMetrics.carts_abandoned_today || 0} color="text-orange-600" />
-              <Metric label="Pedidos hoje" value={stats.ordersMetrics.orders_today || 0} color="text-emerald-600" />
-              <Metric label="Conversao hoje" value={`${stats.ordersMetrics.conversion_rate || 0}%`} color="text-purple-600" />
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">Atualiza ao recarregar o dashboard</span>
+          </div>
+          {stats.ordersMetrics?.error && (
+            <div className="mb-4 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+              {stats.ordersMetrics.error}
             </div>
-            <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <div>
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">Ultimos pedidos</h3>
-                {(stats.ordersMetrics.latest_orders || []).length === 0 ? (
-                  <p className="text-sm text-gray-400">Nenhum pedido recente.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {stats.ordersMetrics.latest_orders.map(order => (
-                      <div key={order.id} className="rounded-lg border border-gray-100 p-3 text-sm">
-                        <div className="flex justify-between gap-2">
-                          <span className="font-medium text-gray-900">{order.customer_name}</span>
-                          <span className="text-gray-500">{order.status}</span>
-                        </div>
-                        <div className="text-gray-500">{order.customer_phone}{order.store_name ? ` - ${order.store_name}` : ''}</div>
+          )}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <Metric label="Carrinhos ativos agora" value={stats.ordersMetrics.carts_active_now || 0} color="text-blue-600" />
+            <Metric label="Carrinhos abandonados hoje" value={stats.ordersMetrics.carts_abandoned_today || 0} color="text-orange-600" />
+            <Metric label="Pedidos hoje" value={stats.ordersMetrics.orders_today || 0} color="text-emerald-600" />
+            <Metric label="Conversao hoje" value={`${stats.ordersMetrics.conversion_rate || 0}%`} color="text-purple-600" />
+          </div>
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div>
+              <h3 className="mb-3 text-sm font-semibold text-gray-700">Ultimos pedidos</h3>
+              {(stats.ordersMetrics.latest_orders || []).length === 0 ? (
+                <p className="text-sm text-gray-400">Nenhum pedido recente.</p>
+              ) : (
+                <div className="space-y-2">
+                  {stats.ordersMetrics.latest_orders.map(order => (
+                    <div key={order.id} className="rounded-lg border border-gray-100 p-3 text-sm">
+                      <div className="flex justify-between gap-2">
+                        <span className="font-medium text-gray-900">{order.customer_name}</span>
+                        <span className="text-gray-500">{order.status}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">Produtos mais pedidos hoje</h3>
-                {(stats.ordersMetrics.top_order_items || []).length === 0 ? (
-                  <p className="text-sm text-gray-400">Ainda sem itens em pedidos hoje.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {stats.ordersMetrics.top_order_items.map(item => (
-                      <div key={item.product_name} className="flex justify-between rounded-lg border border-gray-100 p-3 text-sm">
-                        <span className="text-gray-700">{item.product_name}</span>
-                        <span className="font-semibold">{item.quantity}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      <div className="text-gray-500">{order.customer_phone}{order.store_name ? ` - ${order.store_name}` : ''}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 className="mb-3 text-sm font-semibold text-gray-700">Produtos mais pedidos hoje</h3>
+              {(stats.ordersMetrics.top_order_items || []).length === 0 ? (
+                <p className="text-sm text-gray-400">Ainda sem itens em pedidos hoje.</p>
+              ) : (
+                <div className="space-y-2">
+                  {stats.ordersMetrics.top_order_items.map(item => (
+                    <div key={item.product_name} className="flex justify-between rounded-lg border border-gray-100 p-3 text-sm">
+                      <span className="text-gray-700">{item.product_name}</span>
+                      <span className="font-semibold">{item.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
