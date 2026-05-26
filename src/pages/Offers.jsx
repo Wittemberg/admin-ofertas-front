@@ -64,12 +64,15 @@ function EditModal({ offer, onClose, onSave }) {
         starts_at: toDateIso(form.starts_at),
         ends_at: toDateIso(form.ends_at)
       }
+      let savedOffer
       if (offer?.id) {
-        await updateOffer(offer.id, payload)
+        const res = await updateOffer(offer.id, payload)
+        savedOffer = res.data || res
       } else {
-        await createOffer(payload)
+        const res = await createOffer(payload)
+        savedOffer = res.data || res
       }
-      onSave()
+      onSave(savedOffer)
     } catch (err) {
       console.error(err)
       alert(err?.response?.data?.error || err?.response?.data?.message || 'Erro ao salvar oferta')
@@ -187,20 +190,28 @@ export default function Offers() {
   const [editingOffer, setEditingOffer] = useState(null)
   const limit = 20
 
-  const fetchOffers = () => {
-    getOffers({ page, limit, search: search || undefined })
-      .then(res => {
-        const data = res.data || res
-        setOffers(data.offers || [])
-        setTotal(data.total || 0)
-      })
-      .catch(console.error)
+  const fetchOffers = async () => {
+    try {
+      const res = await getOffers({ page, limit, search: search || undefined, t: Date.now() })
+      const data = res.data || res
+      setOffers(data.offers || [])
+      setTotal(data.total || 0)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   useEffect(() => { fetchOffers() }, [page, search])
 
-  const handleSave = () => {
+  const handleSave = (savedOffer) => {
     setEditingOffer(null)
+    if (savedOffer?.id) {
+      setOffers(current => {
+        const exists = current.some(offer => offer.id === savedOffer.id)
+        if (exists) return current.map(offer => offer.id === savedOffer.id ? savedOffer : offer)
+        return [savedOffer, ...current]
+      })
+    }
     fetchOffers()
   }
 
