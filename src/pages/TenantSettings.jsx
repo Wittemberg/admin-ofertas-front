@@ -13,6 +13,7 @@ const DEFAULT_FORM = {
   order_email: '',
   order_whatsapp: '',
   order_whatsapp_message_template: '',
+  cart_abandonment_minutes: 30,
   address_street: '',
   address_number: '',
   address_city: '',
@@ -48,6 +49,7 @@ export default function TenantSettings() {
         order_email: data.order_email || '',
         order_whatsapp: data.order_whatsapp || '',
         order_whatsapp_message_template: data.order_whatsapp_message_template || '',
+        cart_abandonment_minutes: data.cart_abandonment_minutes || 30,
         address_street: data.address_street || '',
         address_number: data.address_number || '',
         address_city: data.address_city || '',
@@ -162,6 +164,13 @@ export default function TenantSettings() {
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Field label="E-mail para receber pedidos" type="email" value={form.order_email} onChange={value => updateField('order_email', value)} placeholder="pedidos@empresa.com.br" />
               <Field label="WhatsApp para receber pedidos" value={form.order_whatsapp} onChange={value => updateField('order_whatsapp', value)} placeholder="5547999990000" />
+              <Field
+                label="Tempo para considerar carrinho abandonado (minutos)"
+                type="number"
+                value={form.cart_abandonment_minutes}
+                onChange={value => updateField('cart_abandonment_minutes', value)}
+                placeholder="30"
+              />
               <Field
                 label="Mensagem padrao do WhatsApp"
                 value={form.order_whatsapp_message_template}

@@ -133,7 +133,9 @@ export default function Dashboard() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-lg font-semibold">Pedidos e listas</h2>
-              <p className="text-sm text-gray-500">Indicadores de carrinho e intencao de compra em tempo quase real.</p>
+              <p className="text-sm text-gray-500">
+                Carrinhos sem atividade por {stats.ordersMetrics.cart_abandonment_minutes || 30} minutos entram como abandonados.
+              </p>
             </div>
             <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">Atualiza ao recarregar o dashboard</span>
           </div>
