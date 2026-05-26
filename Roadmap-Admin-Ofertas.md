@@ -12,7 +12,7 @@ Repositorios relacionados:
 
 ## Status Geral
 
-O projeto ja possui base funcional em producao, com deploy automatizado via GitHub Actions, Portainer, Docker Swarm e Traefik. O foco atual e estabilizar o Admin Ofertas, fechar o ciclo de cadastro/gestao de clientes, validar recuperacao de senha em producao e melhorar a experiencia visual das telas administrativas.
+O projeto ja possui base funcional em producao, com deploy automatizado via GitHub Actions, Portainer, Docker Swarm e Traefik. O ciclo principal do Admin Ofertas esta operacional: cadastro/manutencao de clientes, recuperacao de senha, branding/logo e configuracoes essenciais ja foram validados em producao.
 
 ## Concluido
 
@@ -41,6 +41,7 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Area de Super Admin protegida por `role === "superadmin"`.
 - Troca de senha para usuario logado.
 - Recuperacao de senha por e-mail com token temporario.
+- Recuperacao de senha por e-mail validada, operacional e testada.
 - Configuracoes SMTP centralizadas no Super Admin.
 - API Keys para integracoes externas.
 
@@ -75,6 +76,7 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Preview visual no painel.
 - Correcoes de URL da logo para evitar duplicacao de bucket no S3/MinIO.
 - Persistencia da URL limpa da logo, sem parametros temporarios de cache.
+- Branding e logo validados em producao.
 
 ### Super Admin
 
@@ -90,6 +92,7 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Edicao do admin principal.
 - Redefinicao de senha do admin principal.
 - Ativacao e desativacao de cliente.
+- Cadastro e manutencao de clientes validados em producao.
 
 ### API
 
@@ -123,39 +126,19 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Roadmap consolidado neste arquivo.
 - Roadmap duplicado da API removido.
 
-## Em Validacao
+## Validado em Producao
 
 ### Recuperacao de senha por e-mail
 
-Implementado no front e na API. Falta validar em producao com o provedor SMTP definitivo.
-
-Pontos de atencao:
-
-- `from` precisa ser autorizado pelo provedor SMTP.
-- Para Zoho, preferir remetente igual ao usuario autenticado ou alias validado.
-- `reset_url` deve apontar para `https://admin-ofertas.wrtec.com.br`.
-- Erros SMTP agora devem voltar com mensagem mais clara pela API.
+Validado, operacional e funcional. Fluxo testado com envio de e-mail, link de redefinicao e troca de senha por token.
 
 ### Cadastro e manutencao de clientes
 
-Implementado no Super Admin. Falta validar o fluxo completo em producao:
-
-- Criar cliente.
-- Criar admin inicial.
-- Fazer login com o novo admin.
-- Alterar dados do cliente.
-- Desativar cliente e confirmar bloqueio de login.
-- Reativar cliente e confirmar login.
+Validado. Fluxo de criacao, edicao e manutencao de clientes esta em ordem.
 
 ### Branding e logo
 
-Implementado e ajustado. Falta validar em producao com storage real:
-
-- Upload de logo.
-- Geracao de paleta.
-- Preview imediato no admin.
-- Persistencia depois de sair e voltar na tela.
-- Exibicao da logo no `app-ofertas`.
+Validado. Upload de logo, preview, persistencia e aplicacao do branding estao funcionando.
 
 ## Pendente Prioritario
 
@@ -305,6 +288,19 @@ Objetivo: consultar bases externas por EAN para preencher nome oficial, marca, f
 Prioridade: Futura. Impacto: Muito alto.
 
 Objetivo: sugerir ofertas com base em historico de vendas, margem, sazonalidade e comportamento de consumo.
+
+### 6. Criacao automatica de banners
+
+Prioridade: Media. Impacto: Alto.
+
+Objetivo: gerar banners promocionais com base nas ofertas ativas e nos produtos em destaque.
+
+Escopo previsto:
+
+- Selecionar automaticamente ofertas e destaques relevantes.
+- Gerar arte respeitando logo, cores e identidade visual do tenant.
+- Criar variacoes para site publico, redes sociais e campanhas.
+- Permitir preview, edicao simples e aprovacao antes de publicar.
 
 ## Decisoes de Organizacao
 
