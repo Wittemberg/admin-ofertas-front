@@ -231,6 +231,11 @@ export default function Dashboard() {
             <div className="text-lg">🏷️</div>
             <div className="text-sm font-medium mt-1">Ofertas</div>
           </a>
+          <a href="/pedidos"
+            className="bg-emerald-50 text-emerald-700 rounded-lg p-4 text-center hover:bg-emerald-100 transition">
+            <div className="text-lg">Pedidos</div>
+            <div className="text-sm font-medium mt-1">Pedidos</div>
+          </a>
           <a href="/relatorios"
             className="bg-teal-50 text-teal-700 rounded-lg p-4 text-center hover:bg-teal-100 transition">
             <div className="text-lg">📊</div>

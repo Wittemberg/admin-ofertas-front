@@ -6,6 +6,7 @@ import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import ImportCSV from './pages/ImportCSV'
 import Offers from './pages/Offers'
+import Orders from './pages/Orders'
 import Products from './pages/Products'
 import Stores from './pages/Stores'
 import Categories from './pages/Categories'
@@ -34,6 +35,7 @@ function App() {
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/importar" element={<ProtectedRoute><ImportCSV /></ProtectedRoute>} />
           <Route path="/ofertas" element={<ProtectedRoute><Offers /></ProtectedRoute>} />
+          <Route path="/pedidos" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
           <Route path="/produtos" element={<ProtectedRoute><Products /></ProtectedRoute>} />
           <Route path="/filiais" element={<ProtectedRoute><Stores /></ProtectedRoute>} />
           <Route path="/categorias" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
