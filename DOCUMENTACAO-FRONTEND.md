@@ -1,149 +1,264 @@
-# admin-ofertas-front — Documentação Técnica
+# admin-ofertas-front - Documentacao Tecnica
 
-Frontend SPA React 19 + Vite 8 + TailwindCSS 4.
-Painel administrativo para gestão de produtos, filiais, categorias, ofertas e configurações do sistema.
-Consome API do repositório api-ofertas.
+Frontend SPA do painel administrativo do projeto Ofertas. O sistema e multi-tenant e consome a API do repositorio `api-ofertas`, enquanto o site publico do cliente final fica no repositorio `app-ofertas`.
 
----
+## Visao Geral
 
-## Visão Geral
+O painel permite administrar:
 
-Painel multi-tenant com:
-- CRUD completo de produtos, filiais, categorias e ofertas
-- Importação CSV em lote (ofertas, filiais, categorias)
-- Dashboard com métricas e gráficos
-- Exportação de relatórios CSV
-- Gerenciamento de API Keys para integração com ERPs
-- Configurações da Empresa (branding, contato, endereço, redes, horários)
-- Super Admin System — configurações do sistema com auditoria
-
----
+- Produtos, filiais, categorias e ofertas
+- Importacao CSV de dados em lote
+- Dashboard com metricas operacionais
+- Relatorios em CSV
+- Chaves de API para integracoes externas
+- Configuracoes da empresa exibidas no painel e no site publico
+- Branding da loja, incluindo logo, paleta de cores e fonte
+- Troca de senha pelo usuario logado
+- Recuperacao de senha por e-mail
+- Area de Super Admin para configuracoes globais, clientes e auditoria
 
 ## Stack
 
-| Vite | ^8.0.12 | Build tool |
-| React Router DOM | ^7.15.1 | Rotas |
-| @tailwindcss/vite | ^4.3.0 | Plugin Tailwind |
+| Tecnologia | Uso |
+| --- | --- |
+| React 19 | Interface SPA |
+| Vite 8 | Build e ambiente de desenvolvimento |
+| React Router DOM 7 | Rotas publicas e privadas |
+| TailwindCSS 4 | Estilizacao |
+| Axios | Cliente HTTP com interceptors |
+| Nginx | Servir build estatico em producao |
 
----
+## Rotas Publicas
 
-## Páginas
+### Login - `/login`
 
-### Login (/login — Login.jsx)
-Formulário de autenticação. Envia POST /auth/login, recebe JWT e armazena no localStorage.
+Arquivo: `src/pages/Login.jsx`
 
-### Dashboard (/ — Dashboard.jsx)
-Métricas em 4 cards (Produtos, Lojas, Categorias, Ofertas), totalizador de ofertas em destaque, gráficos de barras "Ofertas por Loja" e "Produtos por Categoria", atalhos de navegação.
+Tela de autenticacao. Envia credenciais para `POST /auth/login`, armazena o token JWT no `localStorage` e direciona o usuario para o dashboard. Tambem possui link para recuperacao de senha.
 
-### Produtos (/produtos — Products.jsx)
-Tabela com busca, paginação 10 itens e modal de cadastro/edição. Campos: código interno, EAN, nome, descrição, imagem, unidade, categoria. Upload de imagem via MinIO S3.
+### Esqueci minha senha - `/esqueci-senha`
 
-### Filiais (/filiais — Stores.jsx)
-Tabela com Nome, Slug, Cidade, Estado, Telefone, Status. Slug gerado automaticamente.
+Arquivo: `src/pages/ForgotPassword.jsx`
 
-### Categorias (/categorias — Categories.jsx)
-Tabela com Nome, Slug, Status. CRUD completo.
+Solicita o e-mail do usuario e chama `POST /auth/forgot-password`. A API usa as configuracoes SMTP cadastradas no Super Admin para enviar o link de redefinicao.
 
-### Ofertas (/ofertas — Offers.jsx)
-Listagem com filtros por loja, produto e ofertas em destaque.
+### Redefinir senha - `/redefinir-senha`
 
-### Importar CSV (/importar — ImportCSV.jsx)
-Três abas (Ofertas, Filiais, Categorias) com drag-and-drop, validações e feedback detalhado.
+Arquivo: `src/pages/ResetPassword.jsx`
 
-### Relatórios (/relatorios — Reports.jsx)
-Três cards de download CSV: ofertas vigentes, produtos sem oferta, lojas inativas.
+Recebe o token pela query string (`?token=...`) e envia a nova senha para `POST /auth/reset-password`.
 
-### API Keys (/api-keys — ApiKeys.jsx)
-Gerenciamento de chaves de integração: criar, listar, revogar e copiar para área de transferência.
+## Rotas Autenticadas
 
-### Configurações da Empresa (/configuracoes — TenantSettings.jsx)
-Seis abas de configuração:
-- Informações — Nome, descrição, domínio do site público
-- Contato — Telefone, e-mail, WhatsApp
-- Endereço — Rua, número, cidade, estado, CEP
-- Branding — Upload de logo, paleta de cores (primária, secundária, destaque, fundo, texto), fonte, preview ao vivo do site
-- Redes Sociais — Instagram, Facebook, YouTube, TikTok
-- Horários — Tabela de dias com abertura/fechamento
+Todas as rotas autenticadas passam pelo `ProtectedRoute`, que exige token valido e redireciona para `/login` em caso de sessao ausente ou expirada.
 
-### Super Admin — Configurações (/super-admin/configuracoes — SuperAdminConfig.jsx)
-CRUD de configurações do sistema por abas: Storage, Database, Geral, Email.
-- Edição inline com salvamento individual
-- Criação de nova configuração
-- Exclusão com confirmação
-- Campos secretos mascarados com toggle
-- Botão Recarregar Cache e botão Auditoria
-- Link Voltar ao Dashboard
-- Guard de segurança (role superadmin)
+### Dashboard - `/`
 
-### Super Admin — Auditoria (/super-admin/auditoria — SuperAdminAudit.jsx)
-Tabela de logs com Data/Hora, Ação, Entidade, Valor Antigo, Valor Novo, IP.
-Filtros por ação e entidade, paginação, link Voltar ao Super Admin, guard de segurança.
+Arquivo: `src/pages/Dashboard.jsx`
 
----
+Exibe cards com totais de produtos, lojas, categorias e ofertas ativas, alem de graficos simples de ofertas por loja e produtos por categoria. Usuarios com perfil `superadmin` veem um link para acessar a area de Super Admin. A tela tambem possui acesso para troca de senha.
 
-## Site Público — app-ofertas
+### Trocar senha - `/alterar-senha`
 
-O frontend público do consumidor final é um projeto separado:
-- Repositório: https://github.com/Wittemberg/app-ofertas
-- Stack: React 19 + Vite 8 + TailwindCSS 4 (mesmo stack)
-- Arquitetura: Single SPA multi-tenant com CNAME por cliente
-- Domínio: app-ofertas.wrtec.com.br
-- API sem auth: GET /api/public/tenant, /offers, /products, /stores, /categories
-- Veja DOCUMENTACAO-APP-OFERTAS.md para detalhes completos
+Arquivo: `src/pages/ChangePassword.jsx`
 
----
+Permite que o usuario logado altere a propria senha informando a senha atual e a nova senha. Chama `POST /auth/change-password`.
 
-## Super Admin System — Guard de Segurança (duas camadas)
+### Produtos - `/produtos`
 
-1. Rota protegida — ProtectedRoute exige token JWT. Sem token → /login.
-2. Guard interno — Verifica user.role === superadmin. Se falhar → tela "Acesso Restrito" com link Voltar ao Dashboard.
+Arquivo: `src/pages/Products.jsx`
 
-Usuários role admin (ex: admin@portonovo.com) não passam. Apenas superadmin (ex: superadmim@wrtec.com.br) acessa.
+CRUD de produtos com busca, paginacao, categoria, codigos internos, EAN, unidade, descricao e imagem.
 
----
+### Filiais - `/filiais`
 
-## API Module (src/api/admin.js)
+Arquivo: `src/pages/Stores.jsx`
 
-- getConfigs() — GET /admin/config
-- getConfigsByCategory(category) — GET /admin/config/:category
-- updateConfig(category, key, data) — PUT /admin/config/:category/:key
-- createConfig(data) — POST /admin/config
-- deleteConfig(category, key) — DELETE /admin/config/:category/:key
-- reloadCache() — POST /admin/config/reload
+CRUD de filiais com nome, slug, cidade, estado, telefone e status.
 
----
+### Categorias - `/categorias`
 
-## Axios — Configuração (src/api/axios.js)
+Arquivo: `src/pages/Categories.jsx`
 
-Instância Axios com baseURL via env, interceptor de request que injeta token JWT do localStorage, interceptor de response que trata 401 (remove token e redireciona para /login).
+CRUD de categorias com nome, slug e status.
 
----
+### Ofertas - `/ofertas`
 
-## Autenticação
+Arquivo: `src/pages/Offers.jsx`
 
-| Componente | Função 
-| ProtectedRoute | Envolve rotas privadas, redireciona para /login |
-| Logout | Remove token + limpa estado |
+Gestao de ofertas com filtros por produto, filial e destaque.
 
----
+### Importar CSV - `/importar`
 
-## Docker
+Arquivo: `src/pages/ImportCSV.jsx`
 
-Multi-stage: node:20-alpine (builder) → nginx:alpine (serve). nginx.conf com fallback index.html para SPA routing + cache de assets.
+Importacao em lote para ofertas, filiais e categorias, com validacoes e feedback visual.
 
----
+### Relatorios - `/relatorios`
 
-## CI/CD
+Arquivo: `src/pages/Reports.jsx`
 
-Push main → GitHub Actions → build Docker → push ghcr.io/wittemberg/admin-ofertas-front:latest → webhook Portainer → redeploy Swarm.
+Downloads em CSV para operacoes administrativas, como ofertas vigentes, produtos sem oferta e lojas inativas.
 
----
+### API Keys - `/api-keys`
+
+Arquivo: `src/pages/ApiKeys.jsx`
+
+Criacao, listagem, copia e revogacao de chaves de API para integracoes externas.
+
+### Configuracoes da empresa - `/configuracoes`
+
+Arquivo: `src/pages/TenantSettings.jsx`
+
+Centraliza dados usados pelo painel e pelo site publico:
+
+- Nome, descricao e dominio
+- Telefone, e-mail e WhatsApp
+- Endereco
+- Redes sociais
+- Horarios de funcionamento
+- Fonte visual
+- Logo e paleta de cores
+
+## Branding Inteligente
+
+Arquivo: `src/pages/BrandingUpload.jsx`
+
+Componente usado dentro das configuracoes da empresa para upload e preview da logo. Aceita imagens PNG, JPG, SVG e WebP, com limite de 2 MB.
+
+Fluxo principal:
+
+- Faz upload da logo em `POST /auth/tenant/logo`
+- Gera paleta de cores em `POST /auth/tenant/branding`
+- Salva cores e logo em `PUT /auth/tenant/settings`
+- Mantem cache-bust apenas no preview local, preservando a URL limpa para persistencia
+
+Esse cuidado evita que a logo salva fique com query string temporaria e previne quebra de preview quando a imagem vem de S3/MinIO.
+
+## Super Admin
+
+A area de Super Admin possui guard interno alem do `ProtectedRoute`. Apenas usuarios com `role === "superadmin"` acessam essas telas.
+
+### Configuracoes globais - `/super-admin/configuracoes`
+
+Arquivo: `src/pages/super-admin/SuperAdminConfig.jsx`
+
+Permite consultar e editar configuracoes globais do sistema por categoria:
+
+- `storage`: S3/MinIO e URLs publicas de arquivos
+- `database`: configuracoes relacionadas ao banco
+- `general`: parametros gerais da aplicacao
+- `email`: configuracoes SMTP
+
+Tambem possui acao para recarregar cache de configuracoes e acesso rapido para Clientes e Auditoria.
+
+#### Configuracoes SMTP esperadas
+
+Categoria: `email`
+
+| Chave | Exemplo | Observacao |
+| --- | --- | --- |
+| `host` | `smtppro.zoho.com` | Servidor SMTP |
+| `port` | `465` | Normalmente `465` com SSL ou `587` com STARTTLS |
+| `user` | `financeiro@wrtec.com.br` | Conta autenticada no provedor |
+| `password` | `********` | Senha ou app password, marcada como secreta |
+| `from` | `Admin Ofertas <financeiro@wrtec.com.br>` | Remetente autorizado pelo provedor |
+| `secure` | `true` | Use `true` para porta 465 e `false` para 587 |
+| `reset_url` | `https://admin-ofertas.wrtec.com.br` | Base usada para montar o link de redefinicao |
+
+### Clientes - `/super-admin/clientes`
+
+Arquivo: `src/pages/super-admin/SuperAdminClients.jsx`
+
+Tela para gerenciar tenants/clientes. Permite:
+
+- Listar clientes existentes
+- Criar novo cliente
+- Definir nome, slug, dominio e status
+- Criar ou atualizar o usuario administrador do cliente
+- Alterar e-mail e nome do administrador
+- Redefinir senha inicial ou temporaria do administrador
+- Ativar ou desativar cliente
+
+Principais endpoints usados:
+
+- `GET /admin/tenants`
+- `POST /admin/tenants`
+- `PUT /admin/tenants/:id`
+
+### Auditoria - `/super-admin/auditoria`
+
+Arquivo: `src/pages/super-admin/SuperAdminAudit.jsx`
+
+Exibe logs administrativos com data, acao, entidade, valores antigos/novos e IP. Usada para rastrear alteracoes sensiveis feitas no Super Admin.
+
+## Modulos de API
+
+### `src/api/axios.js`
+
+Instancia central do Axios. Define `baseURL` por variavel de ambiente, injeta token JWT no header `Authorization` e trata respostas `401` removendo a sessao local.
+
+### `src/api/auth.js`
+
+Funcoes principais:
+
+- `login(email, password)`
+- `getMe()`
+- `changePassword(current_password, new_password)`
+- `forgotPassword(email)`
+- `resetPassword(token, new_password)`
+
+### `src/api/admin.js`
+
+Funcoes de Super Admin:
+
+- `getConfigs()`
+- `getConfigsByCategory(category)`
+- `createConfig(data)`
+- `updateConfig(category, key, data)`
+- `deleteConfig(category, key)`
+- `reloadCache()`
+- `getAuditLogs(params)`
+- `getTenants()`
+- `createTenant(data)`
+- `updateTenant(id, data)`
+
+### `src/api/tenant.js`
+
+Configuracoes da empresa:
+
+- `getTenantSettings()`
+- `updateTenantSettings(data)`
+- `uploadTenantLogo(file)`
+- `uploadTenantBranding(file)`
+
+## Integracao com o Site Publico
+
+O site publico fica no repositorio `app-ofertas` e consome dados publicos da API, incluindo configuracoes visuais cadastradas no admin:
+
+- Logo
+- Cores
+- Fonte
+- Nome e descricao da loja
+- Contatos
+- Endereco
+- Redes sociais
+- Horarios
+- Produtos, ofertas, categorias e filiais
 
 ## Deploy
 
-| Item | Detalhe 
-| URL | https://admin-ofertas.wrtec.com.br |
+O projeto e empacotado em Docker com build multi-stage:
+
+1. Builder Node para gerar os arquivos estaticos
+2. Nginx para servir a SPA em producao
+
+O deploy atual roda via GitHub Actions, publica a imagem no registry configurado e aciona redeploy no Portainer/Swarm.
+
+## URL de Producao
+
+`https://admin-ofertas.wrtec.com.br`
 
 ---
 
-> Documentação gerada em 19/05/2026.
+Atualizado em 26/05/2026.
