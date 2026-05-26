@@ -93,10 +93,18 @@ export default function Dashboard() {
               {user?.email && `Bem-vindo, ${user.email}`}
             </p>
           </div>
-          <button onClick={logout}
-            className="px-4 py-2 bg-white border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
-            Sair
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            <button onClick={logout}
+              className="px-4 py-2 bg-white border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
+              Sair
+            </button>
+            {user?.role === 'superadmin' && (
+              <a href="/super-admin/configuracoes"
+                className="text-sm text-blue-600 hover:underline">
+                Super Admin
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

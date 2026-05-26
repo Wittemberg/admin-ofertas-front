@@ -92,7 +92,7 @@ export default function TenantSettings() {
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <a href="/" className="text-sm text-blue-600 hover:text-blue-800">Voltar ao dashboard</a>
+            <a href="/" className="text-blue-600 hover:underline text-sm mb-4 inline-block">&larr; Voltar ao Dashboard</a>
             <h1 className="mt-2 text-2xl font-bold text-slate-900">Configuracoes da empresa</h1>
             <p className="text-sm text-slate-500">Dados usados no painel e no site publico de ofertas.</p>
           </div>
