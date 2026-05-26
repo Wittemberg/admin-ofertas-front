@@ -12,6 +12,12 @@ const DEFAULT_COLORS = {
   text: '#0f172a'
 }
 
+function withCacheBust(url) {
+  if (!url) return null
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}t=${Date.now()}`
+}
+
 /* ----------------------- Componente do input de cor ----------------------- */
 function EditableColorRow({ label, color, onChange }) {
   return (
@@ -139,9 +145,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   useEffect(() => {
     if (!currentSettings) return
 
-    const remoteLogo = currentSettings.logo_url
-      ? `${currentSettings.logo_url}?t=${Date.now()}`
-      : null
+    const remoteLogo = withCacheBust(currentSettings.logo_url)
 
     setLogoUrl(remoteLogo)
 
@@ -185,9 +189,11 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
     try {
       const { data } = await uploadTenantBranding(file)
 
+      const remoteLogo = withCacheBust(data.logo_url)
+
       setColors(data.palette)
-      setLogoUrl(`${data.logo_url}?t=${Date.now()}`)
-      setPreview(`${data.logo_url}?t=${Date.now()}`)
+      setLogoUrl(remoteLogo)
+      setPreview(current => current || remoteLogo)
 
       setStatusMessage('Cores extraídas com sucesso!')
 
