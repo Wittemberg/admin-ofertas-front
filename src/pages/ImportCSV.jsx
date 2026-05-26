@@ -6,8 +6,16 @@ const tabs = [
     id: 'offers',
     label: 'Importar Ofertas',
     endpoint: '/imports/csv',
-    format: `internal_code,barcode,name,category,price_from,price_to,unit,store_slug,starts_at,ends_at,is_featured
-ARZ001,7891234567890,Arroz 5kg,Mercearia,25.90,19.90,UN,campo-grande,2026-05-13,2026-05-20,true`
+    format: `internal_code,barcode,name,category,price_from,price_to,unit,store_slug,starts_at,ends_at,is_featured,is_active
+ARZ001,7891234567890,Arroz 5kg,Mercearia,25.90,19.90,UN,campo-grande,2026-05-13,2026-05-20,true,true`
+  },
+  {
+    id: 'deactivate-offers',
+    label: 'Inativar Ofertas',
+    endpoint: '/imports/offers/deactivate',
+    format: `product_code,store_slug,ends_before
+ARZ001,campo-grande,
+,,2026-05-20`
   },
   {
     id: 'products',
