@@ -2,20 +2,40 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getDashboardMetrics } from '../api/dashboard'
 
+const DEFAULT_ORDER_METRICS = {
+  carts_active_now: 0,
+  carts_abandoned_today: 0,
+  orders_today: 0,
+  carts_started_today: 0,
+  conversion_rate: 0,
+  latest_orders: [],
+  top_order_items: []
+}
+
+const DASHBOARD_LINKS = [
+  { href: '/produtos', label: 'Produtos', tag: 'Produtos', className: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
+  { href: '/filiais', label: 'Lojas', tag: 'Lojas', className: 'bg-green-50 text-green-700 hover:bg-green-100' },
+  { href: '/categorias', label: 'Categorias', tag: 'Categorias', className: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' },
+  { href: '/ofertas', label: 'Ofertas', tag: 'Ofertas', className: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
+  { href: '/pedidos', label: 'Pedidos', tag: 'Pedidos', className: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+  { href: '/relatorios', label: 'Relatorios', tag: 'Relatorios', className: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
+  { href: '/api-keys', label: 'API Keys', tag: 'Chaves', className: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' },
+  { href: '/alterar-senha', label: 'Alterar Senha', tag: 'Senha', className: 'bg-sky-50 text-sky-700 hover:bg-sky-100' },
+  { href: '/importar', label: 'Importar CSV', tag: 'Importar', className: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
+  { href: '/configuracoes', label: 'Configuracoes', tag: 'Config', className: 'bg-slate-50 text-slate-700 hover:bg-slate-100' }
+]
+
 export default function Dashboard() {
   const { user, setUser } = useAuth()
-  const defaultOrderMetrics = {
-    carts_active_now: 0,
-    carts_abandoned_today: 0,
-    orders_today: 0,
-    carts_started_today: 0,
-    conversion_rate: 0,
-    latest_orders: [],
-    top_order_items: []
-  }
   const [stats, setStats] = useState({
-    products: 0, stores: 0, categories: 0, offers: 0, featuredOffers: 0,
-    offersByStore: [], productsByCategory: [], ordersMetrics: defaultOrderMetrics
+    products: 0,
+    stores: 0,
+    categories: 0,
+    offers: 0,
+    featuredOffers: 0,
+    offersByStore: [],
+    productsByCategory: [],
+    ordersMetrics: DEFAULT_ORDER_METRICS
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -32,13 +52,12 @@ export default function Dashboard() {
         featuredOffers: data.featuredOffers || 0,
         offersByStore: data.offers_by_store || [],
         productsByCategory: data.products_by_category || [],
-        ordersMetrics: data.orders_metrics || defaultOrderMetrics
+        ordersMetrics: data.orders_metrics || DEFAULT_ORDER_METRICS
       })
     }).catch(err => {
       console.error(err)
       setError(err.response?.data?.error || 'Erro ao carregar dashboard')
-    })
-    .finally(() => setLoading(false))
+    }).finally(() => setLoading(false))
   }, [])
 
   const logout = () => {
@@ -73,13 +92,14 @@ export default function Dashboard() {
               Sair
             </button>
             {user?.role === 'superadmin' && (
-              <a href="/super-admin/configuracoes"
-                className="text-sm text-blue-600 hover:underline">
+              <a href="/super-admin/configuracoes" className="text-sm text-blue-600 hover:underline">
                 Super Admin
               </a>
             )}
           </div>
         </div>
+
+        <DashboardLinks />
 
         {error && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -104,7 +124,7 @@ export default function Dashboard() {
             <div className="text-3xl font-bold text-purple-600">{stats.offers}</div>
             <div className="text-gray-500 text-sm mt-1">Ofertas ativas</div>
             {stats.featuredOffers > 0 && (
-              <div className="text-xs text-yellow-600 mt-1">★ {stats.featuredOffers} em destaque</div>
+              <div className="text-xs text-yellow-600 mt-1">{stats.featuredOffers} em destaque</div>
             )}
           </a>
         </div>
@@ -209,60 +229,21 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <a href="/produtos"
-            className="bg-blue-50 text-blue-700 rounded-lg p-4 text-center hover:bg-blue-100 transition">
-            <div className="text-lg">📋</div>
-            <div className="text-sm font-medium mt-1">Produtos</div>
-          </a>
-          <a href="/filiais"
-            className="bg-green-50 text-green-700 rounded-lg p-4 text-center hover:bg-green-100 transition">
-            <div className="text-lg">🏪</div>
-            <div className="text-sm font-medium mt-1">Lojas</div>
-          </a>
-          <a href="/categorias"
-            className="bg-yellow-50 text-yellow-700 rounded-lg p-4 text-center hover:bg-yellow-100 transition">
-            <div className="text-lg">📁</div>
-            <div className="text-sm font-medium mt-1">Categorias</div>
-          </a>
-          <a href="/ofertas"
-            className="bg-purple-50 text-purple-700 rounded-lg p-4 text-center hover:bg-purple-100 transition">
-            <div className="text-lg">🏷️</div>
-            <div className="text-sm font-medium mt-1">Ofertas</div>
-          </a>
-          <a href="/pedidos"
-            className="bg-emerald-50 text-emerald-700 rounded-lg p-4 text-center hover:bg-emerald-100 transition">
-            <div className="text-lg">Pedidos</div>
-            <div className="text-sm font-medium mt-1">Pedidos</div>
-          </a>
-          <a href="/relatorios"
-            className="bg-teal-50 text-teal-700 rounded-lg p-4 text-center hover:bg-teal-100 transition">
-            <div className="text-lg">📊</div>
-            <div className="text-sm font-medium mt-1">Relatórios</div>
-          </a>
-          <a href="/api-keys"
-            className="bg-indigo-50 text-indigo-700 rounded-lg p-4 text-center hover:bg-indigo-100 transition">
-            <div className="text-lg">🔑</div>
-            <div className="text-sm font-medium mt-1">API Keys</div>
-          </a>
-          <a href="/alterar-senha"
-            className="bg-sky-50 text-sky-700 rounded-lg p-4 text-center hover:bg-sky-100 transition">
-            <div className="text-lg">Senha</div>
-            <div className="text-sm font-medium mt-1">Alterar Senha</div>
-          </a>
-          <a href="/importar"
-            className="bg-orange-50 text-orange-700 rounded-lg p-4 text-center hover:bg-orange-100 transition">
-            <div className="text-lg">📥</div>
-            <div className="text-sm font-medium mt-1">Importar CSV</div>
-          </a>
-          <a href="/configuracoes"
-            className="bg-slate-50 text-slate-700 rounded-lg p-4 text-center hover:bg-slate-100 transition">
-            <div className="text-lg">⚙️</div>
-            <div className="text-sm font-medium mt-1">Configurações</div>
-          </a>
-        </div>
       </div>
+    </div>
+  )
+}
+
+function DashboardLinks() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      {DASHBOARD_LINKS.map(link => (
+        <a key={link.href} href={link.href}
+          className={`${link.className} rounded-lg p-4 text-center transition`}>
+          <div className="text-xs font-semibold uppercase tracking-wide opacity-70">{link.tag}</div>
+          <div className="text-sm font-medium mt-1">{link.label}</div>
+        </a>
+      ))}
     </div>
   )
 }
