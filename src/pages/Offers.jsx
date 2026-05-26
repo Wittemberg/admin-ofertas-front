@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react'
 import { getOffers, createOffer, updateOffer, deleteOffer } from '../api/offers'
 import api from '../api/axios'
 
+const parseMoney = (value) => {
+  if (value === undefined || value === null || value === '') return null
+  const normalized = Number(String(value).replace(',', '.'))
+  return Number.isFinite(normalized) ? normalized : NaN
+}
+
+const toDateIso = (value) => value ? `${value}T12:00:00.000Z` : null
+
 function EditModal({ offer, onClose, onSave }) {
   const [form, setForm] = useState({
     product_id: offer?.product_id || offer?.product?.id || '',
@@ -41,12 +49,20 @@ function EditModal({ offer, onClose, onSave }) {
     }
     setSaving(true)
     try {
+      const priceFrom = parseMoney(form.price_from)
+      const priceTo = parseMoney(form.price_to)
+      if (Number.isNaN(priceFrom) || Number.isNaN(priceTo) || priceTo <= 0) {
+        alert('Informe valores validos para os precos')
+        return
+      }
+
       const payload = {
         ...form,
-        price_from: form.price_from ? parseFloat(form.price_from) : null,
-        price_to: parseFloat(form.price_to),
-        starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
-        ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null
+        store_id: form.store_id || null,
+        price_from: priceFrom,
+        price_to: priceTo,
+        starts_at: toDateIso(form.starts_at),
+        ends_at: toDateIso(form.ends_at)
       }
       if (offer?.id) {
         await updateOffer(offer.id, payload)
@@ -54,8 +70,9 @@ function EditModal({ offer, onClose, onSave }) {
         await createOffer(payload)
       }
       onSave()
-    } catch {
-      alert('Erro ao salvar oferta')
+    } catch (err) {
+      console.error(err)
+      alert(err?.response?.data?.error || err?.response?.data?.message || 'Erro ao salvar oferta')
     } finally {
       setSaving(false)
     }
@@ -106,14 +123,14 @@ function EditModal({ offer, onClose, onSave }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Preço De (R$)</label>
-              <input type="number" step="0.01" min="0" placeholder="0,00"
+              <input type="text" inputMode="decimal" placeholder="0,00"
                 className="w-full p-3 border rounded"
                 value={form.price_from}
                 onChange={e => setForm({ ...form, price_from: e.target.value })} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Preço Por (R$) *</label>
-              <input type="number" step="0.01" min="0.01" placeholder="0,00" required
+              <input type="text" inputMode="decimal" placeholder="0,00" required
                 className="w-full p-3 border rounded"
                 value={form.price_to}
                 onChange={e => setForm({ ...form, price_to: e.target.value })} />
