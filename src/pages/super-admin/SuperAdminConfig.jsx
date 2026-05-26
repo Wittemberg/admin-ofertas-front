@@ -33,6 +33,16 @@ const STORAGE_RECOMMENDED_KEYS = [
   { key: 'object_acl', example: 'public-read', required: false }
 ]
 
+const EMAIL_RECOMMENDED_KEYS = [
+  { key: 'host', example: 'smtp.seudominio.com.br', required: true },
+  { key: 'port', example: '587', required: true },
+  { key: 'user', example: 'no-reply@seudominio.com.br', required: false },
+  { key: 'password', example: '********', required: false },
+  { key: 'from', example: 'Admin Ofertas <no-reply@seudominio.com.br>', required: true },
+  { key: 'secure', example: 'false', required: false },
+  { key: 'reset_url', example: 'https://admin-ofertas.wrtec.com.br', required: true }
+]
+
 export default function SuperAdminConfig() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -237,7 +247,28 @@ export default function SuperAdminConfig() {
           </button>
         </div>
 
-        <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <div className="mb-4 flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate('/super-admin/configuracoes')}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+          >
+            Configurações
+          </button>
+          <button
+            onClick={() => navigate('/super-admin/clientes')}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Clientes
+          </button>
+          <button
+            onClick={() => navigate('/super-admin/auditoria')}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Auditoria
+          </button>
+        </div>
+
+        <div className="mb-6 flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Super Admin</h1>
             <p className="mt-1 text-sm text-slate-500">
@@ -247,13 +278,6 @@ export default function SuperAdminConfig() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => navigate('/super-admin/clientes')}
-              className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-            >
-              Clientes
-            </button>
-
             <button
               onClick={handleReload}
               className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
@@ -373,6 +397,42 @@ export default function SuperAdminConfig() {
                 <code className="rounded bg-slate-100 px-1 py-0.5">S3_BUCKET</code> e{' '}
                 <code className="rounded bg-slate-100 px-1 py-0.5">S3_PUBLIC_URL</code>.
               </p>
+            </div>
+          </div>
+        ) : null}
+
+        {activeCategory === 'email' ? (
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-5">
+            <h2 className="text-base font-semibold text-blue-900">
+              Parâmetros recomendados para Email SMTP
+            </h2>
+            <p className="mt-1 text-sm text-blue-800">
+              Estes dados são usados pelo link "Esqueceu a senha?" na tela de login.
+            </p>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {EMAIL_RECOMMENDED_KEYS.map((item) => {
+                const exists = configs.some((config) => config.category === 'email' && config.key === item.key)
+
+                return (
+                  <div key={item.key} className="rounded-lg border border-blue-200 bg-white p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <code className="text-sm font-semibold text-slate-900">{item.key}</code>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        exists ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {exists ? 'cadastrada' : 'pendente'}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Exemplo: <span className="font-mono">{item.example}</span>
+                    </p>
+                    <p className="mt-2 text-xs text-slate-600">
+                      {item.required ? 'Obrigatória' : 'Opcional'}
+                    </p>
+                  </div>
+                )
+              })}
             </div>
           </div>
         ) : null}

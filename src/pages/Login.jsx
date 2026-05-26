@@ -47,6 +47,10 @@ export default function Login() {
           className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">
           Entrar
         </button>
+
+        <a href="/esqueci-senha" className="mt-4 block text-center text-sm text-blue-600 hover:underline">
+          Esqueceu a senha?
+        </a>
       </form>
     </div>
   )

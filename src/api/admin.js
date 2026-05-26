@@ -19,3 +19,5 @@ export const getAuditLogs = (params) => api.get('/admin/audit', { params })
 export const getTenants = () => api.get('/admin/tenants')
 
 export const createTenant = (data) => api.post('/admin/tenants', data)
+
+export const updateTenant = (id, data) => api.put(`/admin/tenants/${id}`, data)
