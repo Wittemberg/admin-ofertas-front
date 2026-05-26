@@ -55,7 +55,14 @@ function EditableColorRow({ label, color, onChange }) {
 }
 
 /* ----------------------- Preview visual ----------------------- */
-function SitePreview({ colors, logoUrl, localPreview }) {
+function getSiteUrl(domain) {
+  if (!domain) return null
+  const clean = String(domain).trim()
+  if (!clean) return null
+  return clean.startsWith('http://') || clean.startsWith('https://') ? clean : `https://${clean}`
+}
+
+function SitePreview({ colors, logoUrl, localPreview, siteUrl }) {
   const previewVars = useMemo(
     () => ({
       '--brand-primary': colors.primary,
@@ -69,9 +76,9 @@ function SitePreview({ colors, logoUrl, localPreview }) {
 
   const activeLogo = localPreview || logoUrl
 
-  return (
+  const preview = (
     <div
-      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
       style={previewVars}
     >
       {/* Topo */}
@@ -126,6 +133,20 @@ function SitePreview({ colors, logoUrl, localPreview }) {
       </div>
     </div>
   )
+
+  if (!siteUrl) return preview
+
+  return (
+    <a
+      href={siteUrl}
+      target="_blank"
+      rel="noreferrer"
+      title="Abrir site publico"
+      className="block"
+    >
+      {preview}
+    </a>
+  )
 }
 
 /* ----------------------- Componente Principal ----------------------- */
@@ -150,6 +171,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
   const [colors, setColors] = useState(initialColors)
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
+  const siteUrl = useMemo(() => getSiteUrl(currentSettings?.domain), [currentSettings?.domain])
 
   const fileInputRef = useRef(null)
 
@@ -380,12 +402,25 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
 
         {/* Preview */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm col-span-2 lg:col-span-1">
-          <h3 className="text-base font-semibold text-slate-900 mb-3">Preview visual</h3>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-base font-semibold text-slate-900">Preview visual</h3>
+            {siteUrl && (
+              <a
+                href={siteUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-semibold text-blue-600 hover:underline"
+              >
+                Ver site ao vivo
+              </a>
+            )}
+          </div>
 
           <SitePreview
             colors={colors}
             logoUrl={logoUrl}
             localPreview={preview}
+            siteUrl={siteUrl}
           />
         </div>
       </div>
