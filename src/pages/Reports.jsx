@@ -84,6 +84,8 @@ const REPORTS = [
   }
 ]
 
+const FILTERED_REPORTS = new Set(['orders', 'order-items', 'cart-sessions', 'order-summary'])
+
 function exportToCsv(data, filename) {
   const BOM = '\uFEFF'
   const headers = Object.keys(data[0] || {})
@@ -110,11 +112,29 @@ function exportToCsv(data, filename) {
 
 export default function Reports() {
   const [loading, setLoading] = useState({})
+  const [filters, setFilters] = useState({
+    date_from: '',
+    date_to: '',
+    order_status: '',
+    cart_status: ''
+  })
 
   const handleExport = async (report) => {
     setLoading(prev => ({ ...prev, [report.key]: true }))
     try {
-      const res = await api.get(`/reports/${report.key}`)
+      const params = {}
+      if (FILTERED_REPORTS.has(report.key)) {
+        if (filters.date_from) params.date_from = filters.date_from
+        if (filters.date_to) params.date_to = filters.date_to
+        if (['orders', 'order-items'].includes(report.key) && filters.order_status) {
+          params.status = filters.order_status
+        }
+        if (report.key === 'cart-sessions' && filters.cart_status) {
+          params.status = filters.cart_status
+        }
+      }
+
+      const res = await api.get(`/reports/${report.key}`, { params })
       const data = res.data || []
       if (data.length === 0) {
         alert('Nenhum dado encontrado para este relatorio')
@@ -126,6 +146,10 @@ export default function Reports() {
     } finally {
       setLoading(prev => ({ ...prev, [report.key]: false }))
     }
+  }
+
+  const updateFilter = (field, value) => {
+    setFilters(current => ({ ...current, [field]: value }))
   }
 
   return (
@@ -140,6 +164,67 @@ export default function Reports() {
             Arquivos CSV para operacao manual, conferencia e integracao com sistemas sem API.
           </p>
         </div>
+
+        <section className="mb-8 rounded-lg bg-white p-5 shadow">
+          <h2 className="text-lg font-semibold">Filtros de pedidos e carrinhos</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Aplicados aos relatorios de pedidos, itens, carrinhos e resumo.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-4">
+            <label className="text-sm">
+              <span className="mb-1 block font-medium text-gray-700">Data inicial</span>
+              <input
+                type="date"
+                value={filters.date_from}
+                onChange={event => updateFilter('date_from', event.target.value)}
+                className="w-full rounded-lg border px-3 py-2"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block font-medium text-gray-700">Data final</span>
+              <input
+                type="date"
+                value={filters.date_to}
+                onChange={event => updateFilter('date_to', event.target.value)}
+                className="w-full rounded-lg border px-3 py-2"
+              />
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block font-medium text-gray-700">Status do pedido</span>
+              <select
+                value={filters.order_status}
+                onChange={event => updateFilter('order_status', event.target.value)}
+                className="w-full rounded-lg border px-3 py-2"
+              >
+                <option value="">Todos</option>
+                <option value="pending">Pendente</option>
+                <option value="processing">Em atendimento</option>
+                <option value="completed">Concluido</option>
+                <option value="cancelled">Cancelado</option>
+              </select>
+            </label>
+            <label className="text-sm">
+              <span className="mb-1 block font-medium text-gray-700">Status do carrinho</span>
+              <select
+                value={filters.cart_status}
+                onChange={event => updateFilter('cart_status', event.target.value)}
+                className="w-full rounded-lg border px-3 py-2"
+              >
+                <option value="">Todos</option>
+                <option value="active">Ativo</option>
+                <option value="converted">Convertido</option>
+                <option value="abandoned">Abandonado</option>
+              </select>
+            </label>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFilters({ date_from: '', date_to: '', order_status: '', cart_status: '' })}
+            className="mt-4 rounded-lg border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Limpar filtros
+          </button>
+        </section>
 
         <div className="space-y-8">
           {REPORTS.map(group => (
