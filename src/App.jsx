@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import Health from './pages/Health'
 import Dashboard from './pages/Dashboard'
 import ImportCSV from './pages/ImportCSV'
 import Offers from './pages/Offers'
@@ -33,6 +34,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/esqueci-senha" element={<ForgotPassword />} />
           <Route path="/redefinir-senha" element={<ResetPassword />} />
+          <Route path="/health" element={<Health />} />
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/importar" element={<ProtectedRoute><ImportCSV /></ProtectedRoute>} />
           <Route path="/ofertas" element={<ProtectedRoute><Offers /></ProtectedRoute>} />
