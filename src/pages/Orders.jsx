@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getOrders, updateOrderStatus } from '../api/orders'
+import { getErrorMessage } from '../api/errors'
 
 const STATUS_LABELS = {
   pending: 'Pendente',
@@ -138,7 +139,7 @@ export default function Orders() {
         if (updated) setSelected(updated)
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao carregar pedidos')
+      setError(getErrorMessage(err, 'Erro ao carregar pedidos'))
     } finally {
       setLoading(false)
     }
@@ -169,7 +170,7 @@ export default function Orders() {
       setSelected(current => current?.id === order.id ? data : current)
       fetchOrders()
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao atualizar status')
+      alert(getErrorMessage(err, 'Erro ao atualizar status'))
     }
   }
 

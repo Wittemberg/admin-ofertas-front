@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getDashboardMetrics } from '../api/dashboard'
+import { getErrorMessage } from '../api/errors'
 
 const DEFAULT_ORDER_METRICS = {
   carts_active_now: 0,
@@ -61,7 +62,7 @@ export default function Dashboard() {
       })
     }).catch(err => {
       console.error(err)
-      setError(err.response?.data?.error || 'Erro ao carregar dashboard')
+      setError(getErrorMessage(err, 'Erro ao carregar dashboard'))
     }).finally(() => setLoading(false))
   }, [])
 

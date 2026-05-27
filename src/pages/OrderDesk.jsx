@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getOrders, updateOrderStatus } from '../api/orders'
+import { getErrorMessage } from '../api/errors'
 
 const STATUS_LABELS = {
   pending: 'Pendente',
@@ -112,7 +113,7 @@ export default function OrderDesk() {
       }
       initialLoadDoneRef.current = true
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao carregar atendimento')
+      setError(getErrorMessage(err, 'Erro ao carregar atendimento'))
     } finally {
       if (!silent) setLoading(false)
     }
@@ -134,7 +135,7 @@ export default function OrderDesk() {
       await updateOrderStatus(order.id, status)
       await fetchDesk({ silent: true })
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao atualizar status')
+      alert(getErrorMessage(err, 'Erro ao atualizar status'))
     }
   }
 

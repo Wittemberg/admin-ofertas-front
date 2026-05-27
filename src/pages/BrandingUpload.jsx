@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { uploadTenantBranding, updateTenantSettings } from '../api/tenant'
+import { getErrorMessage } from '../api/errors'
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp']
 const MAX_SIZE = 2 * 1024 * 1024
@@ -236,7 +237,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       setStatusMessage('Cores extraídas com sucesso!')
 
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao processar branding')
+      setError(getErrorMessage(err, 'Erro ao processar branding'))
     } finally {
       setExtracting(false)
     }
@@ -266,7 +267,7 @@ export default function BrandingUpload({ onBrandingApplied, currentSettings }) {
       if (onBrandingApplied) await onBrandingApplied()
 
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao aplicar configurações')
+      setError(getErrorMessage(err, 'Erro ao aplicar configuracoes'))
     } finally {
       setApplying(false)
       setFile(null)

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getTenantSettings, updateTenantSettings } from '../api/tenant'
+import { getErrorMessage } from '../api/errors'
 import BrandingUpload from './BrandingUpload'
 
 const DEFAULT_FORM = {
@@ -58,7 +59,7 @@ export default function TenantSettings() {
         font_family: data.font_family || DEFAULT_FORM.font_family
       })
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao carregar configuracoes')
+      setError(getErrorMessage(err, 'Erro ao carregar configuracoes'))
     } finally {
       setLoading(false)
     }
@@ -83,7 +84,7 @@ export default function TenantSettings() {
       setSettings(data.settings)
       setStatus('Configuracoes salvas com sucesso.')
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao salvar configuracoes')
+      setError(getErrorMessage(err, 'Erro ao salvar configuracoes'))
     } finally {
       setSaving(false)
     }

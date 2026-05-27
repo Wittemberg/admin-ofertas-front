@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api from '../api/axios'
+import { getErrorMessage } from '../api/errors'
 
 const REPORTS = [
   {
@@ -149,7 +150,7 @@ export default function Reports() {
       }
       exportToCsv(data, report.title)
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao gerar relatorio')
+      alert(getErrorMessage(err, 'Erro ao gerar relatorio'))
     } finally {
       setLoading(prev => ({ ...prev, [report.key]: false }))
     }
