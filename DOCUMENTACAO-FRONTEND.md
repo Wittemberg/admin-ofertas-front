@@ -11,6 +11,7 @@ O painel permite administrar:
 - Dashboard com metricas operacionais
 - Mesa de atendimento de pedidos em tempo quase real
 - Historico e auditoria de status dos pedidos
+- Cadastro de usuarios do tenant com perfis basicos
 - Relatorios em CSV
 - Chaves de API para integracoes externas
 - Configuracoes da empresa exibidas no painel e no site publico
@@ -174,6 +175,28 @@ Os relatorios de pedidos aceitam filtros por periodo e status.
 Arquivo: `src/pages/ApiKeys.jsx`
 
 Criacao, listagem, copia e revogacao de chaves de API para integracoes externas.
+
+### Usuarios - `/usuarios`
+
+Arquivo: `src/pages/Users.jsx`
+
+Tela para administradores do tenant criarem e manterem usuarios do cliente.
+
+Perfis:
+
+| Perfil | Acesso principal |
+| --- | --- |
+| `admin` | Acesso total ao tenant |
+| `editor` | Produtos, filiais, categorias, ofertas e importacao |
+| `operator` | Pedidos e atendimento |
+| `viewer` | Dashboard e relatorios |
+
+Regras de interface:
+
+- Somente `admin` acessa `/usuarios`.
+- O usuario logado nao consegue desativar a si mesmo.
+- O usuario logado nao consegue alterar o proprio perfil.
+- Atalhos do dashboard aparecem conforme o perfil.
 
 ### Configuracoes da empresa - `/configuracoes`
 

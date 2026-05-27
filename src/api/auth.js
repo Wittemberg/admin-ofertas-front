@@ -14,3 +14,12 @@ export const forgotPassword = (email) =>
 
 export const resetPassword = (token, new_password) =>
   api.post('/auth/reset-password', { token, new_password })
+
+export const getTenantUsers = () =>
+  api.get('/auth/users')
+
+export const createTenantUser = (data) =>
+  api.post('/auth/users', data)
+
+export const updateTenantUser = (id, data) =>
+  api.put(`/auth/users/${id}`, data)

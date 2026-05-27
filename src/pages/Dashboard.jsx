@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getDashboardMetrics } from '../api/dashboard'
 import { getErrorMessage } from '../api/errors'
+import { canAccess } from '../auth/permissions'
 
 const DEFAULT_ORDER_METRICS = {
   carts_active_now: 0,
@@ -18,17 +19,18 @@ const DEFAULT_ORDER_METRICS = {
 }
 
 const DASHBOARD_LINKS = [
-  { href: '/produtos', label: 'Produtos', tag: 'Produtos', className: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
-  { href: '/filiais', label: 'Lojas', tag: 'Lojas', className: 'bg-green-50 text-green-700 hover:bg-green-100' },
-  { href: '/categorias', label: 'Categorias', tag: 'Categorias', className: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' },
-  { href: '/ofertas', label: 'Ofertas', tag: 'Ofertas', className: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
-  { href: '/pedidos', label: 'Pedidos', tag: 'Pedidos', className: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
-  { href: '/atendimento', label: 'Atendimento', tag: 'Pedidos', className: 'bg-lime-50 text-lime-700 hover:bg-lime-100' },
-  { href: '/relatorios', label: 'Relatorios', tag: 'Relatorios', className: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
-  { href: '/api-keys', label: 'API Keys', tag: 'Chaves', className: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' },
-  { href: '/alterar-senha', label: 'Alterar Senha', tag: 'Senha', className: 'bg-sky-50 text-sky-700 hover:bg-sky-100' },
-  { href: '/importar', label: 'Importar CSV', tag: 'Importar', className: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
-  { href: '/configuracoes', label: 'Configuracoes', tag: 'Config', className: 'bg-slate-50 text-slate-700 hover:bg-slate-100' }
+  { href: '/produtos', label: 'Produtos', tag: 'Produtos', roles: ['admin', 'editor'], className: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
+  { href: '/filiais', label: 'Lojas', tag: 'Lojas', roles: ['admin', 'editor'], className: 'bg-green-50 text-green-700 hover:bg-green-100' },
+  { href: '/categorias', label: 'Categorias', tag: 'Categorias', roles: ['admin', 'editor'], className: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' },
+  { href: '/ofertas', label: 'Ofertas', tag: 'Ofertas', roles: ['admin', 'editor'], className: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
+  { href: '/pedidos', label: 'Pedidos', tag: 'Pedidos', roles: ['admin', 'operator'], className: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+  { href: '/atendimento', label: 'Atendimento', tag: 'Pedidos', roles: ['admin', 'operator'], className: 'bg-lime-50 text-lime-700 hover:bg-lime-100' },
+  { href: '/relatorios', label: 'Relatorios', tag: 'Relatorios', roles: ['admin', 'editor', 'operator', 'viewer'], className: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
+  { href: '/api-keys', label: 'API Keys', tag: 'Chaves', roles: ['admin'], className: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' },
+  { href: '/usuarios', label: 'Usuarios', tag: 'Acessos', roles: ['admin'], className: 'bg-rose-50 text-rose-700 hover:bg-rose-100' },
+  { href: '/alterar-senha', label: 'Alterar Senha', tag: 'Senha', roles: [], className: 'bg-sky-50 text-sky-700 hover:bg-sky-100' },
+  { href: '/importar', label: 'Importar CSV', tag: 'Importar', roles: ['admin', 'editor'], className: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
+  { href: '/configuracoes', label: 'Configuracoes', tag: 'Config', roles: ['admin'], className: 'bg-slate-50 text-slate-700 hover:bg-slate-100' }
 ]
 
 export default function Dashboard() {
@@ -105,7 +107,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <DashboardLinks />
+        <DashboardLinks user={user} />
 
         {error && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -248,10 +250,11 @@ export default function Dashboard() {
   )
 }
 
-function DashboardLinks() {
+function DashboardLinks({ user }) {
+  const links = DASHBOARD_LINKS.filter(link => canAccess(user, link.roles))
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-      {DASHBOARD_LINKS.map(link => (
+      {links.map(link => (
         <a key={link.href} href={link.href}
           className={`${link.className} rounded-lg p-4 text-center transition`}>
           <div className="text-xs font-semibold uppercase tracking-wide opacity-70">{link.tag}</div>

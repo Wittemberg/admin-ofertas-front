@@ -42,6 +42,7 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Troca de senha para usuario logado.
 - Recuperacao de senha por e-mail com token temporario.
 - Recuperacao de senha por e-mail validada, operacional e testada.
+- Usuario inativo bloqueado no login.
 - Configuracoes SMTP centralizadas no Super Admin.
 - API Keys para integracoes externas.
 
@@ -66,6 +67,9 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Link para Super Admin visivel apenas para superadmin.
 - Link de troca de senha no dashboard.
 - Navegacao de retorno padronizada nas telas principais.
+- Cadastro e manutencao de usuarios do tenant.
+- Perfis basicos por usuario: admin, editor, operator e viewer.
+- Atalhos do dashboard filtrados por perfil.
 
 ### Configuracoes da empresa
 
