@@ -15,6 +15,14 @@ const STATUS_CLASSES = {
   cancelled: 'bg-red-50 text-red-700 border-red-200'
 }
 
+const STATUS_FILTERS = [
+  { value: '', label: 'Todos', tone: 'text-gray-900' },
+  { value: 'pending', label: STATUS_LABELS.pending, tone: 'text-yellow-700' },
+  { value: 'processing', label: STATUS_LABELS.processing, tone: 'text-blue-700' },
+  { value: 'completed', label: STATUS_LABELS.completed, tone: 'text-emerald-700' },
+  { value: 'cancelled', label: STATUS_LABELS.cancelled, tone: 'text-red-700' }
+]
+
 function formatMoney(value) {
   if (!value) return '-'
   return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -25,12 +33,38 @@ function formatDate(value) {
   return new Date(value).toLocaleString('pt-BR')
 }
 
+function buildOrderSummary(order) {
+  const lines = [
+    'Novo pedido - Site de Ofertas',
+    `Cliente: ${order.customer_name || '-'}`,
+    `WhatsApp: ${order.customer_phone || '-'}`,
+    `Loja: ${order.store_name || 'Todas'}`,
+    `Status: ${STATUS_LABELS[order.status] || order.status || '-'}`,
+    `Data: ${formatDate(order.created_at)}`,
+    '',
+    'Itens:'
+  ]
+
+  for (const item of order.items || []) {
+    lines.push(`${item.quantity}x ${item.product_name} - ${formatMoney(item.unit_price_snapshot)}`)
+  }
+
+  lines.push('')
+  lines.push(`Total estimado: ${formatMoney(order.total_estimated)}`)
+  if (order.customer_note) lines.push(`Obs: ${order.customer_note}`)
+
+  return lines.join('\n')
+}
+
 export default function Orders() {
   const [orders, setOrders] = useState([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [statusCounts, setStatusCounts] = useState({ total: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState(null)
@@ -44,10 +78,13 @@ export default function Orders() {
         page,
         limit,
         status: status || undefined,
-        search: search || undefined
+        search: search || undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined
       })
       setOrders(data.orders || [])
       setTotal(data.total || 0)
+      setStatusCounts(data.status_counts || { total: data.total || 0 })
       if (selected?.id) {
         const updated = (data.orders || []).find(order => order.id === selected.id)
         if (updated) setSelected(updated)
@@ -61,7 +98,7 @@ export default function Orders() {
 
   useEffect(() => {
     fetchOrders()
-  }, [page, status])
+  }, [page, status, dateFrom, dateTo])
 
   const handleSearch = (event) => {
     event.preventDefault()
@@ -74,8 +111,18 @@ export default function Orders() {
       const { data } = await updateOrderStatus(order.id, nextStatus)
       setOrders(current => current.map(item => item.id === order.id ? data : item))
       setSelected(current => current?.id === order.id ? data : current)
+      fetchOrders()
     } catch (err) {
       alert(err.response?.data?.error || 'Erro ao atualizar status')
+    }
+  }
+
+  const copySummary = async (order) => {
+    try {
+      await navigator.clipboard.writeText(buildOrderSummary(order))
+      alert('Resumo copiado')
+    } catch {
+      alert('Nao foi possivel copiar o resumo')
     }
   }
 
@@ -99,6 +146,18 @@ export default function Orders() {
               placeholder="Buscar cliente ou WhatsApp..."
               className="w-64 rounded-lg border px-3 py-2 text-sm"
             />
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={event => { setDateFrom(event.target.value); setPage(1) }}
+              className="rounded-lg border px-3 py-2 text-sm"
+            />
+            <input
+              type="date"
+              value={dateTo}
+              onChange={event => { setDateTo(event.target.value); setPage(1) }}
+              className="rounded-lg border px-3 py-2 text-sm"
+            />
             <select
               value={status}
               onChange={event => { setStatus(event.target.value); setPage(1) }}
@@ -110,7 +169,30 @@ export default function Orders() {
               ))}
             </select>
             <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Buscar</button>
+            <button
+              type="button"
+              onClick={fetchOrders}
+              className="rounded-lg border px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Atualizar
+            </button>
           </form>
+        </div>
+
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {STATUS_FILTERS.map(filter => (
+            <button
+              key={filter.value || 'all'}
+              type="button"
+              onClick={() => { setStatus(filter.value); setPage(1) }}
+              className={`rounded-lg border bg-white p-4 text-left shadow-sm transition hover:border-blue-300 ${status === filter.value ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'}`}
+            >
+              <div className={`text-2xl font-bold ${filter.tone}`}>
+                {filter.value ? statusCounts[filter.value] || 0 : statusCounts.total || 0}
+              </div>
+              <div className="mt-1 text-sm text-gray-500">{filter.label}</div>
+            </button>
+          ))}
         </div>
 
         {error && (
@@ -224,9 +306,16 @@ export default function Orders() {
                     rel="noreferrer"
                     className="mt-4 block rounded-lg bg-green-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-green-700"
                   >
-                    Abrir WhatsApp
+                    Abrir WhatsApp do pedido
                   </a>
                 )}
+                <button
+                  type="button"
+                  onClick={() => copySummary(selected)}
+                  className="mt-2 w-full rounded-lg border px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                  Copiar resumo
+                </button>
               </div>
             )}
           </aside>
