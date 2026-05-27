@@ -1,6 +1,6 @@
 # Roadmap - Admin Ofertas
 
-Atualizado em 26/05/2026.
+Atualizado em 27/05/2026.
 
 Este e o roadmap central do projeto Ofertas. Ele consolida o que antes estava dividido entre `admin-ofertas-front/Roadmap-Admin-Ofertas.md` e `api-ofertas/roadmap.md`.
 
@@ -48,6 +48,7 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 ### Painel administrativo
 
 - Dashboard com indicadores de produtos, lojas, categorias e ofertas.
+- Dashboard com indicadores de pedidos, carrinhos, conversao e atendimento.
 - Graficos simples de ofertas por loja e produtos por categoria.
 - CRUD de produtos.
 - CRUD de filiais.
@@ -57,6 +58,9 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Importacao CSV de filiais.
 - Importacao CSV de categorias.
 - Relatorios CSV.
+- Relatorios CSV filtrados por periodo/status para pedidos, itens, historico, carrinhos e resumo.
+- Tela de pedidos com filtros, contadores, auto-refresh, som de novo pedido e detalhe completo.
+- Mesa de atendimento em `/atendimento` para pedidos pendentes e em atendimento.
 - Gestao de API Keys.
 - Tela de configuracoes da empresa.
 - Link para Super Admin visivel apenas para superadmin.
@@ -109,6 +113,9 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Rotas de integracao externa via `/api/v1/integration`.
 - Logs de integracao com idempotencia.
 - Auditoria para alteracoes sensiveis.
+- Rotas administrativas de pedidos.
+- Historico/auditoria de status de pedidos.
+- Relatorios de pedidos, itens, carrinhos, resumo e historico de status.
 
 ### Site publico
 
@@ -118,11 +125,30 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Consumo de filiais publicas.
 - Consumo de categorias publicas.
 - Aplicacao de branding vindo do tenant: logo, cores, fonte, contatos e dados da empresa.
+- Carrinho/lista de ofertas.
+- Captura antecipada de nome e WhatsApp.
+- Registro de carrinho ativo/abandonado.
+- Finalizacao de pedido com envio por e-mail e WhatsApp.
+
+### Modulo de pedidos
+
+- Habilitacao por tenant via `orders_enabled`.
+- Configuracao de e-mail e WhatsApp de recebimento do pedido.
+- Tempo de carrinho abandonado configuravel por tenant.
+- Pedido salvo com snapshot de itens.
+- Historico inicial criado quando o pedido nasce no site publico.
+- Mudancas de status registradas com usuario, origem e data.
+- Tela `/pedidos` validada.
+- Tela `/atendimento` validada, incluindo alerta sonoro de pedido novo.
+- Exportacao CSV de pedidos, itens, carrinhos, resumo e historico de status.
+- Dashboard com metricas de pedidos e atendimento.
 
 ### Documentacao
 
 - `DOCUMENTACAO-FRONTEND.md` atualizado.
 - `DOCUMENTACAO-API.md` atualizado.
+- `DOCUMENTACAO-INTEGRACAO.md` atualizado.
+- `DOCUMENTACAO-APP-OFERTAS.md` atualizado.
 - Roadmap consolidado neste arquivo.
 - Roadmap duplicado da API removido.
 
@@ -139,6 +165,10 @@ Validado. Fluxo de criacao, edicao e manutencao de clientes esta em ordem.
 ### Branding e logo
 
 Validado. Upload de logo, preview, persistencia e aplicacao do branding estao funcionando.
+
+### Fluxo de pedidos
+
+Validado. Carrinho/lista, pedido salvo, envio por e-mail, link de WhatsApp, tela de pedidos, mesa de atendimento, alerta sonoro, relatorios filtrados e historico de status estao operacionais.
 
 ## Pendente Prioritario
 
@@ -172,6 +202,7 @@ Fluxos a testar:
 - CRUD completo de produtos, filiais, categorias e ofertas.
 - Importacao CSV.
 - Site publico consumindo dados do tenant.
+- Fluxo completo de pedido: carrinho, finalizacao, e-mail, WhatsApp, atendimento, conclusao e relatorio.
 
 ### 3. Melhorar mensagens de erro
 
@@ -207,6 +238,7 @@ Pendencias:
 - Criar guia rapido de configuracao SMTP.
 - Criar guia rapido de configuracao S3/MinIO.
 - Documentar comandos de diagnostico no Portainer/API.
+- Criar guia rapido de operacao diaria de pedidos.
 
 ## Pendente Tecnico
 
@@ -239,6 +271,7 @@ Pendencias:
 - Ter rastreio simples para falhas de SMTP.
 - Ter rastreio simples para falhas de S3/MinIO.
 - Adicionar healthcheck mais util que apenas `/`.
+- Monitorar falhas de envio de e-mail de pedido.
 
 ### Performance e escalabilidade
 
@@ -312,7 +345,7 @@ Escopo previsto:
 
 ## Proximo Marco Recomendado
 
-Estabilizar o ciclo completo de cliente:
+Estabilizar o ciclo operacional do cliente:
 
 1. Superadmin cadastra cliente.
 2. Cliente recebe/acessa credencial inicial.
@@ -321,3 +354,5 @@ Estabilizar o ciclo completo de cliente:
 5. Cliente cadastra ou importa ofertas.
 6. Site publico reflete branding e ofertas.
 7. Cliente consegue recuperar senha por e-mail.
+8. Cliente recebe e atende pedidos pelo painel.
+9. Cliente exporta fechamento do dia por CSV ou consulta via API.

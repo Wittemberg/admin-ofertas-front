@@ -9,6 +9,8 @@ O painel permite administrar:
 - Produtos, filiais, categorias e ofertas
 - Importacao CSV de dados em lote
 - Dashboard com metricas operacionais
+- Mesa de atendimento de pedidos em tempo quase real
+- Historico e auditoria de status dos pedidos
 - Relatorios em CSV
 - Chaves de API para integracoes externas
 - Configuracoes da empresa exibidas no painel e no site publico
@@ -58,6 +60,19 @@ Arquivo: `src/pages/Dashboard.jsx`
 
 Exibe cards com totais de produtos, lojas, categorias e ofertas ativas, alem de graficos simples de ofertas por loja e produtos por categoria. Usuarios com perfil `superadmin` veem um link para acessar a area de Super Admin. A tela tambem possui acesso para troca de senha.
 
+O bloco de pedidos exibe:
+
+- carrinhos ativos agora;
+- carrinhos abandonados hoje;
+- pedidos hoje;
+- conversao hoje;
+- pedidos pendentes agora;
+- pedidos em atendimento agora;
+- pedidos concluidos hoje;
+- pedidos cancelados hoje;
+- ultimos pedidos;
+- produtos mais pedidos no dia.
+
 ### Trocar senha - `/alterar-senha`
 
 Arquivo: `src/pages/ChangePassword.jsx`
@@ -88,6 +103,50 @@ Arquivo: `src/pages/Offers.jsx`
 
 Gestao de ofertas com filtros por produto, filial e destaque.
 
+### Pedidos - `/pedidos`
+
+Arquivo: `src/pages/Orders.jsx`
+
+Gestao completa dos pedidos recebidos pelo site publico. A tela possui:
+
+- filtros por busca, periodo e status;
+- contadores por status;
+- atualizacao automatica a cada 30 segundos;
+- alerta visual e sonoro para pedido novo;
+- detalhe do pedido com itens, total, loja, origem, e-mail e WhatsApp;
+- alteracao de status;
+- link para abrir WhatsApp;
+- copia de resumo do pedido;
+- historico de status com origem, usuario e horario.
+
+Status usados:
+
+| Status | Descricao |
+| --- | --- |
+| `pending` | Pendente |
+| `processing` | Em atendimento |
+| `completed` | Concluido |
+| `cancelled` | Cancelado |
+
+### Atendimento - `/atendimento`
+
+Arquivo: `src/pages/OrderDesk.jsx`
+
+Mesa operacional para deixar aberta no cliente durante o atendimento. Mostra duas colunas:
+
+- novos pedidos;
+- pedidos em atendimento.
+
+Funcionalidades:
+
+- atualizacao automatica a cada 15 segundos;
+- alerta sonoro para pedido novo;
+- iniciar atendimento;
+- concluir pedido;
+- cancelar pedido;
+- copiar resumo;
+- abrir WhatsApp do pedido.
+
 ### Importar CSV - `/importar`
 
 Arquivo: `src/pages/ImportCSV.jsx`
@@ -99,6 +158,16 @@ Importacao em lote para ofertas, filiais e categorias, com validacoes e feedback
 Arquivo: `src/pages/Reports.jsx`
 
 Downloads em CSV para operacoes administrativas, como ofertas vigentes, produtos sem oferta e lojas inativas.
+
+Tambem cobre o ciclo de pedidos para operacoes sem API:
+
+- pedidos do site;
+- itens dos pedidos;
+- historico de status;
+- carrinhos e abandonos;
+- resumo de pedidos.
+
+Os relatorios de pedidos aceitam filtros por periodo e status.
 
 ### API Keys - `/api-keys`
 
@@ -245,6 +314,9 @@ O site publico fica no repositorio `app-ofertas` e consome dados publicos da API
 - Redes sociais
 - Horarios
 - Produtos, ofertas, categorias e filiais
+- Configuracoes de pedidos/lista
+- WhatsApp/e-mail de recebimento de pedidos
+- Tempo configuravel para carrinho abandonado
 
 ## Deploy
 
@@ -261,4 +333,4 @@ O deploy atual roda via GitHub Actions, publica a imagem no registry configurado
 
 ---
 
-Atualizado em 26/05/2026.
+Atualizado em 27/05/2026.
