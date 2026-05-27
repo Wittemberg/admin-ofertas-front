@@ -26,6 +26,14 @@ function formatTime(value) {
   return new Date(value).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
+function todayIsoDate() {
+  return new Date().toISOString().split('T')[0]
+}
+
+function sumOrders(orders) {
+  return orders.reduce((sum, order) => sum + Number(order.total_estimated || 0), 0)
+}
+
 function playAlert() {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext
@@ -72,6 +80,9 @@ function orderSummary(order) {
 export default function OrderDesk() {
   const [pendingOrders, setPendingOrders] = useState([])
   const [processingOrders, setProcessingOrders] = useState([])
+  const [completedToday, setCompletedToday] = useState([])
+  const [cancelledToday, setCancelledToday] = useState([])
+  const [closingView, setClosingView] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [newOrders, setNewOrders] = useState(0)
@@ -84,15 +95,20 @@ export default function OrderDesk() {
     if (!silent) setLoading(true)
     setError('')
     try {
-      const [pendingResponse, processingResponse] = await Promise.all([
+      const today = todayIsoDate()
+      const [pendingResponse, processingResponse, completedResponse, cancelledResponse] = await Promise.all([
         getOrders({ status: 'pending', limit: 50 }),
-        getOrders({ status: 'processing', limit: 50 })
+        getOrders({ status: 'processing', limit: 50 }),
+        getOrders({ status: 'completed', date_from: today, date_to: today, limit: 100 }),
+        getOrders({ status: 'cancelled', date_from: today, date_to: today, limit: 100 })
       ])
 
       const nextPending = pendingResponse.data.orders || []
       const nextProcessing = processingResponse.data.orders || []
       setPendingOrders(nextPending)
       setProcessingOrders(nextProcessing)
+      setCompletedToday(completedResponse.data.orders || [])
+      setCancelledToday(cancelledResponse.data.orders || [])
       setLastUpdatedAt(new Date())
 
       const newestDate = [...nextPending, ...nextProcessing]
@@ -151,6 +167,8 @@ export default function OrderDesk() {
   const lastUpdatedLabel = lastUpdatedAt
     ? lastUpdatedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     : '-'
+  const closingOrders = closingView === 'completed' ? completedToday : closingView === 'cancelled' ? cancelledToday : []
+  const closingTitle = closingView === 'completed' ? 'Concluidos hoje' : closingView === 'cancelled' ? 'Cancelados hoje' : ''
 
   return (
     <div className="min-h-screen bg-slate-100 p-6">
@@ -196,6 +214,55 @@ export default function OrderDesk() {
           Atualizacao automatica a cada 15s. Ultima atualizacao: {lastUpdatedLabel}
         </div>
 
+        <div className="mb-5 grid gap-3 md:grid-cols-2">
+          <ClosingShortcut
+            label="Concluidos hoje"
+            orders={completedToday}
+            active={closingView === 'completed'}
+            color="emerald"
+            onClick={() => setClosingView(closingView === 'completed' ? '' : 'completed')}
+          />
+          <ClosingShortcut
+            label="Cancelados hoje"
+            orders={cancelledToday}
+            active={closingView === 'cancelled'}
+            color="red"
+            onClick={() => setClosingView(closingView === 'cancelled' ? '' : 'cancelled')}
+          />
+        </div>
+
+        {closingView && (
+          <section className="mb-6 rounded-lg bg-white p-4 shadow">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-slate-950">{closingTitle}</h2>
+                <p className="text-sm text-slate-500">
+                  {closingOrders.length} pedido(s), total estimado {formatMoney(sumOrders(closingOrders))}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setClosingView('')}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Voltar para operacao
+              </button>
+            </div>
+
+            {closingOrders.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-200 p-8 text-center text-sm text-slate-400">
+                Nenhum pedido neste grupo hoje.
+              </div>
+            ) : (
+              <div className="grid gap-3 lg:grid-cols-2">
+                {closingOrders.map(order => (
+                  <ClosingOrderCard key={order.id} order={order} onCopy={copy} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
         {error && (
           <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -228,6 +295,63 @@ export default function OrderDesk() {
         )}
       </div>
     </div>
+  )
+}
+
+function ClosingShortcut({ label, orders, active, color, onClick }) {
+  const colorClasses = color === 'emerald'
+    ? active ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-emerald-100 bg-white text-emerald-700 hover:bg-emerald-50'
+    : active ? 'border-red-400 bg-red-50 text-red-800' : 'border-red-100 bg-white text-red-700 hover:bg-red-50'
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-lg border p-4 text-left shadow-sm transition ${colorClasses}`}
+    >
+      <div className="text-sm font-semibold">{label}</div>
+      <div className="mt-2 text-3xl font-bold">{orders.length}</div>
+      <div className="mt-1 text-sm opacity-80">{formatMoney(sumOrders(orders))}</div>
+    </button>
+  )
+}
+
+function ClosingOrderCard({ order, onCopy }) {
+  return (
+    <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <div className="font-bold text-slate-950">{order.customer_name}</div>
+          <div className="text-sm text-slate-500">{order.customer_phone}</div>
+          <div className="mt-1 text-xs text-slate-400">Recebido as {formatTime(order.created_at)}</div>
+        </div>
+        <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_BADGES[order.status] || STATUS_BADGES.pending}`}>
+          {STATUS_LABELS[order.status] || order.status}
+        </span>
+      </div>
+      <div className="mb-3 text-sm text-slate-600">
+        Loja: {order.store_name || 'Todas'} | Total: <strong>{formatMoney(order.total_estimated)}</strong>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => onCopy(order)}
+          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          Copiar resumo
+        </button>
+        {order.whatsapp_url && (
+          <a
+            href={order.whatsapp_url}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700"
+          >
+            Abrir WhatsApp
+          </a>
+        )}
+      </div>
+    </article>
   )
 }
 
