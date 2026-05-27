@@ -18,6 +18,7 @@ const DASHBOARD_LINKS = [
   { href: '/categorias', label: 'Categorias', tag: 'Categorias', className: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' },
   { href: '/ofertas', label: 'Ofertas', tag: 'Ofertas', className: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
   { href: '/pedidos', label: 'Pedidos', tag: 'Pedidos', className: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+  { href: '/atendimento', label: 'Atendimento', tag: 'Pedidos', className: 'bg-lime-50 text-lime-700 hover:bg-lime-100' },
   { href: '/relatorios', label: 'Relatorios', tag: 'Relatorios', className: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
   { href: '/api-keys', label: 'API Keys', tag: 'Chaves', className: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' },
   { href: '/alterar-senha', label: 'Alterar Senha', tag: 'Senha', className: 'bg-sky-50 text-sky-700 hover:bg-sky-100' },
