@@ -20,6 +20,13 @@ const REPORTS = [
         color: 'bg-teal-50 text-teal-700 hover:bg-teal-100'
       },
       {
+        key: 'order-status-history',
+        title: 'Historico de Status',
+        desc: 'Auditoria das mudancas de status dos pedidos, com origem, usuario e horario.',
+        icon: 'Auditoria',
+        color: 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+      },
+      {
         key: 'cart-sessions',
         title: 'Carrinhos e Abandonos',
         desc: 'Listas iniciadas no site, ativas, convertidas ou abandonadas, com dados do cliente.',
@@ -84,7 +91,7 @@ const REPORTS = [
   }
 ]
 
-const FILTERED_REPORTS = new Set(['orders', 'order-items', 'cart-sessions', 'order-summary'])
+const FILTERED_REPORTS = new Set(['orders', 'order-items', 'order-status-history', 'cart-sessions', 'order-summary'])
 
 function exportToCsv(data, filename) {
   const BOM = '\uFEFF'
@@ -126,7 +133,7 @@ export default function Reports() {
       if (FILTERED_REPORTS.has(report.key)) {
         if (filters.date_from) params.date_from = filters.date_from
         if (filters.date_to) params.date_to = filters.date_to
-        if (['orders', 'order-items'].includes(report.key) && filters.order_status) {
+        if (['orders', 'order-items', 'order-status-history'].includes(report.key) && filters.order_status) {
           params.status = filters.order_status
         }
         if (report.key === 'cart-sessions' && filters.cart_status) {

@@ -6,6 +6,10 @@ const DEFAULT_ORDER_METRICS = {
   carts_active_now: 0,
   carts_abandoned_today: 0,
   orders_today: 0,
+  orders_pending_now: 0,
+  orders_processing_now: 0,
+  orders_completed_today: 0,
+  orders_cancelled_today: 0,
   carts_started_today: 0,
   conversion_rate: 0,
   latest_orders: [],
@@ -150,6 +154,12 @@ export default function Dashboard() {
             <Metric label="Carrinhos abandonados hoje" value={stats.ordersMetrics.carts_abandoned_today || 0} color="text-orange-600" />
             <Metric label="Pedidos hoje" value={stats.ordersMetrics.orders_today || 0} color="text-emerald-600" />
             <Metric label="Conversao hoje" value={`${stats.ordersMetrics.conversion_rate || 0}%`} color="text-purple-600" />
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
+            <Metric label="Pendentes agora" value={stats.ordersMetrics.orders_pending_now || 0} color="text-yellow-600" />
+            <Metric label="Em atendimento agora" value={stats.ordersMetrics.orders_processing_now || 0} color="text-blue-600" />
+            <Metric label="Concluidos hoje" value={stats.ordersMetrics.orders_completed_today || 0} color="text-emerald-600" />
+            <Metric label="Cancelados hoje" value={stats.ordersMetrics.orders_cancelled_today || 0} color="text-red-600" />
           </div>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <div>

@@ -23,6 +23,11 @@ const STATUS_FILTERS = [
   { value: 'cancelled', label: STATUS_LABELS.cancelled, tone: 'text-red-700' }
 ]
 
+const HISTORY_ACTIONS = {
+  created: 'Pedido criado',
+  status_changed: 'Status alterado'
+}
+
 function formatMoney(value) {
   if (!value) return '-'
   return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -378,6 +383,35 @@ export default function Orders() {
                 <div className="mt-4 flex items-center justify-between border-t pt-4 text-lg font-bold">
                   <span>Total estimado</span>
                   <span>{formatMoney(selected.total_estimated)}</span>
+                </div>
+
+                <div className="mt-5 border-t pt-4">
+                  <h3 className="mb-3 text-sm font-semibold text-gray-700">Historico do pedido</h3>
+                  {(selected.status_history || []).length === 0 ? (
+                    <p className="text-sm text-gray-400">Nenhum historico registrado.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {selected.status_history.map(history => (
+                        <div key={history.id} className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {HISTORY_ACTIONS[history.action] || history.action}
+                              </div>
+                              <div className="text-gray-500">
+                                {(history.from_status ? `${STATUS_LABELS[history.from_status] || history.from_status} -> ` : '')}
+                                {STATUS_LABELS[history.to_status] || history.to_status}
+                              </div>
+                            </div>
+                            <span className="text-xs text-gray-400">{formatDate(history.created_at)}</span>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-500">
+                            {history.actor_name || (history.source === 'site' ? 'Site publico' : 'Usuario nao identificado')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {selected.whatsapp_url && (
