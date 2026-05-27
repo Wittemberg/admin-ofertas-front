@@ -149,6 +149,7 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - `DOCUMENTACAO-API.md` atualizado.
 - `DOCUMENTACAO-INTEGRACAO.md` atualizado.
 - `DOCUMENTACAO-APP-OFERTAS.md` atualizado.
+- `CHECKLIST-OPERACIONAL.md` criado.
 - Roadmap consolidado neste arquivo.
 - Roadmap duplicado da API removido.
 
@@ -231,14 +232,14 @@ Pendencias:
 
 Prioridade: Media.
 
+Concluido:
+
+- Checklist operacional para cadastro de cliente, SMTP, S3/MinIO, pedidos, testes e diagnostico.
+
 Pendencias:
 
-- Criar checklist de deploy.
-- Criar checklist de cadastro de novo cliente.
-- Criar guia rapido de configuracao SMTP.
-- Criar guia rapido de configuracao S3/MinIO.
+- Criar checklist especifico de deploy.
 - Documentar comandos de diagnostico no Portainer/API.
-- Criar guia rapido de operacao diaria de pedidos.
 
 ## Pendente Tecnico
 

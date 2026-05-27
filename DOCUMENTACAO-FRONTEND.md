@@ -327,6 +327,14 @@ O projeto e empacotado em Docker com build multi-stage:
 
 O deploy atual roda via GitHub Actions, publica a imagem no registry configurado e aciona redeploy no Portainer/Swarm.
 
+## Operacao
+
+Checklist pratico para cadastro de cliente, SMTP, S3/MinIO, pedidos, testes e diagnostico:
+
+```text
+CHECKLIST-OPERACIONAL.md
+```
+
 ## URL de Producao
 
 `https://admin-ofertas.wrtec.com.br`
