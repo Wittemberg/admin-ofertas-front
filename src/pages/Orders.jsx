@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getOrders, updateOrderStatus } from '../api/orders'
 
 const STATUS_LABELS = {
@@ -56,6 +56,29 @@ function buildOrderSummary(order) {
   return lines.join('\n')
 }
 
+function playNewOrderSound() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext
+    if (!AudioContext) return
+    const context = new AudioContext()
+    const oscillator = context.createOscillator()
+    const gain = context.createGain()
+
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(880, context.currentTime)
+    oscillator.frequency.setValueAtTime(660, context.currentTime + 0.12)
+    gain.gain.setValueAtTime(0.001, context.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02)
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.35)
+    oscillator.connect(gain)
+    gain.connect(context.destination)
+    oscillator.start()
+    oscillator.stop(context.currentTime + 0.38)
+  } catch {
+    // Browsers can block audio before user interaction.
+  }
+}
+
 export default function Orders() {
   const [orders, setOrders] = useState([])
   const [total, setTotal] = useState(0)
@@ -65,13 +88,18 @@ export default function Orders() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [statusCounts, setStatusCounts] = useState({ total: 0 })
+  const [newOrdersCount, setNewOrdersCount] = useState(0)
+  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState(null)
+  const latestOrderDateRef = useRef(null)
+  const initialLoadDoneRef = useRef(false)
   const limit = 20
 
-  const fetchOrders = async () => {
-    setLoading(true)
+  const fetchOrders = async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true)
     setError('')
     try {
       const { data } = await getOrders({
@@ -82,11 +110,26 @@ export default function Orders() {
         date_from: dateFrom || undefined,
         date_to: dateTo || undefined
       })
-      setOrders(data.orders || [])
+      const nextOrders = data.orders || []
+      setOrders(nextOrders)
       setTotal(data.total || 0)
       setStatusCounts(data.status_counts || { total: data.total || 0 })
+      setLastUpdatedAt(new Date())
+
+      const newestDate = nextOrders[0]?.created_at || null
+      if (newestDate) {
+        const previousDate = latestOrderDateRef.current
+        if (initialLoadDoneRef.current && previousDate && new Date(newestDate) > new Date(previousDate)) {
+          const incoming = nextOrders.filter(order => new Date(order.created_at) > new Date(previousDate)).length
+          setNewOrdersCount(current => current + incoming)
+          playNewOrderSound()
+        }
+        latestOrderDateRef.current = newestDate
+      }
+      initialLoadDoneRef.current = true
+
       if (selected?.id) {
-        const updated = (data.orders || []).find(order => order.id === selected.id)
+        const updated = nextOrders.find(order => order.id === selected.id)
         if (updated) setSelected(updated)
       }
     } catch (err) {
@@ -99,6 +142,14 @@ export default function Orders() {
   useEffect(() => {
     fetchOrders()
   }, [page, status, dateFrom, dateTo])
+
+  useEffect(() => {
+    if (!autoRefresh) return undefined
+    const timer = setInterval(() => {
+      fetchOrders({ silent: true })
+    }, 30000)
+    return () => clearInterval(timer)
+  }, [autoRefresh, page, status, search, dateFrom, dateTo, selected?.id])
 
   const handleSearch = (event) => {
     event.preventDefault()
@@ -127,6 +178,9 @@ export default function Orders() {
   }
 
   const totalPages = Math.ceil(total / limit)
+  const lastUpdatedLabel = lastUpdatedAt
+    ? lastUpdatedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : '-'
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -200,6 +254,33 @@ export default function Orders() {
             {error}
           </div>
         )}
+
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white px-4 py-3 text-sm shadow-sm">
+          <div>
+            <span className="font-semibold text-gray-900">Monitoramento de pedidos</span>
+            <span className="ml-2 text-gray-500">Ultima atualizacao: {lastUpdatedLabel}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {newOrdersCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setNewOrdersCount(0)}
+                className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700"
+              >
+                {newOrdersCount} novo(s) pedido(s)
+              </button>
+            )}
+            <label className="inline-flex cursor-pointer items-center gap-2 text-gray-600">
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={event => setAutoRefresh(event.target.checked)}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              Atualizar a cada 30s
+            </label>
+          </div>
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
           <div className="overflow-hidden rounded-lg bg-white shadow">
