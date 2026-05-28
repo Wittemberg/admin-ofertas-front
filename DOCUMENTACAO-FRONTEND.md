@@ -38,6 +38,15 @@ O painel permite administrar:
 
 Esses arquivos devem orientar novas telas, revisoes de UI e recursos visuais gerados por IA. O painel deve manter linguagem operacional, com densidade adequada, estados claros e permissao por perfil respeitada.
 
+## Planejamento de Sprints
+
+- Contexto do projeto: `planning/PROJECT.md`
+- Estado atual: `planning/STATE.md`
+- Template de sprint: `planning/SPRINT-TEMPLATE.md`
+- Sprints registradas: `planning/sprints/`
+
+Esse fluxo substitui a necessidade de instalar ferramentas externas de planejamento. Cada sprint relevante deve registrar objetivo, escopo, decisoes, criterios de aceite e validacoes.
+
 ## Rotas Publicas
 
 ### Login - `/login`
