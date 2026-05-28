@@ -180,7 +180,7 @@ Criacao, listagem, copia e revogacao de chaves de API para integracoes externas.
 
 Arquivo: `src/pages/Users.jsx`
 
-Tela para administradores do tenant criarem e manterem usuarios do cliente.
+Tela para administradores do tenant criarem e manterem apenas usuarios da propria empresa.
 
 Perfis:
 
@@ -193,7 +193,9 @@ Perfis:
 
 Regras de interface:
 
-- Somente `admin` acessa `/usuarios`.
+- Somente `admin` de tenant acessa `/usuarios`.
+- `superadmin` nao herda acesso automatico as telas de tenant; ele usa a area `/super-admin`.
+- A listagem de `/usuarios` e filtrada no backend pelo `tenant_id` do usuario logado.
 - O usuario logado nao consegue desativar a si mesmo.
 - O usuario logado nao consegue alterar o proprio perfil.
 - Atalhos do dashboard aparecem conforme o perfil.

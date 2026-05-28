@@ -15,6 +15,5 @@ export const ROLE_OPTIONS = [
 
 export function canAccess(user, roles = []) {
   if (!user) return false
-  if (user.role === 'superadmin') return true
   return roles.length === 0 || roles.includes(user.role)
 }

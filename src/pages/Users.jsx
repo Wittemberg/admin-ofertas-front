@@ -93,8 +93,8 @@ export default function Users() {
           &larr; Voltar ao Dashboard
         </a>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">Usuarios</h1>
-          <p className="mt-1 text-sm text-gray-500">Gerencie acessos do cliente e permissoes basicas por perfil.</p>
+          <h1 className="text-2xl font-bold">Usuarios da empresa</h1>
+          <p className="mt-1 text-sm text-gray-500">Gerencie apenas acessos deste cliente e permissoes basicas por perfil.</p>
         </div>
 
         {message && (

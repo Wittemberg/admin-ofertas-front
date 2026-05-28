@@ -67,9 +67,10 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Link para Super Admin visivel apenas para superadmin.
 - Link de troca de senha no dashboard.
 - Navegacao de retorno padronizada nas telas principais.
-- Cadastro e manutencao de usuarios do tenant.
+- Cadastro e manutencao de usuarios do tenant, filtrados por empresa.
 - Perfis basicos por usuario: admin, editor, operator e viewer.
 - Atalhos do dashboard filtrados por perfil.
+- Super Admin separado das telas operacionais do tenant.
 
 ### Configuracoes da empresa
 
