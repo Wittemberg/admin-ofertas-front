@@ -51,6 +51,10 @@ export default function Login() {
         <a href="/esqueci-senha" className="mt-4 block text-center text-sm text-blue-600 hover:underline">
           Esqueceu a senha?
         </a>
+
+        <a href="/health" className="mt-3 block text-center text-xs text-gray-500 hover:text-blue-600 hover:underline">
+          Status dos servicos
+        </a>
       </form>
     </div>
   )
