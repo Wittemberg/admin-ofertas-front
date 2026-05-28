@@ -41,12 +41,20 @@ Projeto operacional e estabilizado para a etapa atual. Admin, API e site publico
 - Preparar sprint de IA com escopo fechado antes de implementar.
 - Definir fonte comercial ou fluxo web/IA para barcode brasileiro, se Open Food Facts for insuficiente.
 
-## Proximo Marco
+## Marco Atual
 
-Sprint de IA focada inicialmente em enriquecimento de produtos:
+Sprint de IA iniciada com foco inicial em enriquecimento de produtos:
 
 1. Base propria de enriquecimento por barcode.
 2. Busca de imagem real por barcode, nome e marca.
 3. Fila de revisao/aprovacao.
 4. Sugestao de categoria e metadados como fase seguinte.
 5. Banners promocionais como fase posterior.
+
+## Entregue na Sprint de IA 1
+
+- Modelo `product_enrichments` planejado para armazenar barcode, nome, marca, categoria sugerida, imagem, fonte, confianca e status.
+- Rotas administrativas para criar sugestoes, revisar, aprovar e recusar.
+- Tela `/produtos/ia` para fila de revisao e aprovacao manual.
+- Fontes abertas usadas como auxiliares: Open Food Facts e Open Products Facts.
+- Base propria reaproveita enriquecimentos aprovados anteriormente pelo mesmo barcode.

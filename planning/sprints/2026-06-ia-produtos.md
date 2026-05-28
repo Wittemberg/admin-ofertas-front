@@ -4,7 +4,7 @@
 
 - Data prevista: Junho/2026
 - Repositorios provaveis: `admin-ofertas-front`, `api-ofertas`
-- Status: Planejada
+- Status: Em andamento
 
 ## Objetivo
 
@@ -83,6 +83,26 @@ Status possiveis:
 - Admin consegue aprovar ou recusar.
 - Produto aprovado exibe a imagem no admin e no site publico.
 - Produtos sem resultado confiavel permanecem sem imagem real ou usam fallback identificado.
+
+## Entrega 1
+
+Implementada a base inicial da sprint:
+
+- Tabela `product_enrichments` na API.
+- Endpoint para listar fila de revisao.
+- Endpoint para buscar sugestao automatica por barcode.
+- Endpoint para criar sugestao manual por URL.
+- Endpoint para atualizar URL/observacao da sugestao.
+- Endpoint para aprovar e aplicar imagem no produto.
+- Endpoint para recusar sugestao.
+- Tela `/produtos/ia` no admin.
+- Atalho `IA Produtos` no dashboard para perfis `admin` e `editor`.
+
+Limitacoes conhecidas:
+
+- Open Food Facts/Open Products Facts continuam como fontes auxiliares e podem nao encontrar produtos brasileiros.
+- Busca web/IA generativa ainda nao foi conectada nesta entrega.
+- Imagem gerada por IA ainda nao faz parte do fluxo.
 
 ## Checklist Visual
 

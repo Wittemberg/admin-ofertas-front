@@ -296,7 +296,7 @@ Pendencias:
 
 ### 1. Busca automatica de imagens de produto
 
-Prioridade: Media. Impacto: Alto.
+Prioridade: Em andamento. Impacto: Alto.
 
 Objetivo: reduzir trabalho manual no cadastro visual do catalogo.
 
@@ -311,6 +311,13 @@ Escopo previsto:
 - Salvar fonte, nivel de confianca e status de aprovacao da imagem encontrada.
 - Quando a confianca for baixa, enviar para uma fila de revisao manual.
 - Se nao houver imagem real confiavel, usar placeholder por categoria ou imagem gerada marcada como nao-real.
+
+Entregue na primeira etapa:
+
+- Modelo de enriquecimento `product_enrichments`.
+- Tela `/produtos/ia` para criar e revisar sugestoes.
+- Aprovar sugestao aplica `image_url` no produto.
+- Recusar sugestao mantem produto sem alteracao.
 
 Decisao importante:
 

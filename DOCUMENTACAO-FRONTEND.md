@@ -102,6 +102,26 @@ Arquivo: `src/pages/Products.jsx`
 
 CRUD de produtos com busca, paginacao, categoria, codigos internos, EAN, unidade, descricao e imagem.
 
+### IA Produtos - `/produtos/ia`
+
+Arquivo: `src/pages/ProductEnrichment.jsx`
+
+Tela de enriquecimento visual de produtos. Permite:
+
+- buscar produtos por nome, codigo interno ou barcode;
+- solicitar sugestao automatica por barcode;
+- cadastrar sugestao manual por URL de imagem;
+- revisar sugestoes com fonte, confianca e status;
+- ajustar URL/observacao antes de aprovar;
+- aprovar imagem e aplicar no produto;
+- recusar sugestoes inadequadas.
+
+Regras:
+
+- A tela e acessivel por `admin` e `editor`.
+- Nenhuma imagem e aplicada automaticamente sem aprovacao.
+- Imagem real tem prioridade sobre imagem gerada.
+
 ### Filiais - `/filiais`
 
 Arquivo: `src/pages/Stores.jsx`

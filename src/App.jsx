@@ -10,6 +10,7 @@ import Offers from './pages/Offers'
 import Orders from './pages/Orders'
 import OrderDesk from './pages/OrderDesk'
 import Products from './pages/Products'
+import ProductEnrichment from './pages/ProductEnrichment'
 import Stores from './pages/Stores'
 import Categories from './pages/Categories'
 import Reports from './pages/Reports'
@@ -50,6 +51,7 @@ function App() {
           <Route path="/pedidos" element={<RoleRoute roles={['admin', 'operator']}><Orders /></RoleRoute>} />
           <Route path="/atendimento" element={<RoleRoute roles={['admin', 'operator']}><OrderDesk /></RoleRoute>} />
           <Route path="/produtos" element={<RoleRoute roles={['admin', 'editor']}><Products /></RoleRoute>} />
+          <Route path="/produtos/ia" element={<RoleRoute roles={['admin', 'editor']}><ProductEnrichment /></RoleRoute>} />
           <Route path="/filiais" element={<RoleRoute roles={['admin', 'editor']}><Stores /></RoleRoute>} />
           <Route path="/categorias" element={<RoleRoute roles={['admin', 'editor']}><Categories /></RoleRoute>} />
           <Route path="/relatorios" element={<RoleRoute roles={['admin', 'editor', 'operator', 'viewer']}><Reports /></RoleRoute>} />

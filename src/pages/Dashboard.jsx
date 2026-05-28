@@ -20,6 +20,7 @@ const DEFAULT_ORDER_METRICS = {
 
 const DASHBOARD_LINKS = [
   { href: '/produtos', label: 'Produtos', tag: 'Produtos', roles: ['admin', 'editor'], className: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
+  { href: '/produtos/ia', label: 'IA Produtos', tag: 'IA', roles: ['admin', 'editor'], className: 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100' },
   { href: '/filiais', label: 'Lojas', tag: 'Lojas', roles: ['admin', 'editor'], className: 'bg-green-50 text-green-700 hover:bg-green-100' },
   { href: '/categorias', label: 'Categorias', tag: 'Categorias', roles: ['admin', 'editor'], className: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' },
   { href: '/ofertas', label: 'Ofertas', tag: 'Ofertas', roles: ['admin', 'editor'], className: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
