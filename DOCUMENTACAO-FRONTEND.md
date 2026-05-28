@@ -31,6 +31,13 @@ O painel permite administrar:
 | Axios | Cliente HTTP com interceptors |
 | Nginx | Servir build estatico em producao |
 
+## Design System e Auditoria Visual
+
+- Guia visual: `design-system/MASTER.md`
+- Checklist de revisao: `design-system/AUDITORIA-VISUAL.md`
+
+Esses arquivos devem orientar novas telas, revisoes de UI e recursos visuais gerados por IA. O painel deve manter linguagem operacional, com densidade adequada, estados claros e permissao por perfil respeitada.
+
 ## Rotas Publicas
 
 ### Login - `/login`

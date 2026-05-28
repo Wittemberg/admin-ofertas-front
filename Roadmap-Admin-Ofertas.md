@@ -298,11 +298,21 @@ Objetivo: reduzir trabalho manual no cadastro visual do catalogo.
 
 Escopo previsto:
 
-- Buscar imagem por nome, EAN e marca.
+- Usar o ERP/importacao como fonte principal de codigo de barras, nome e marca.
+- Buscar imagem por nome, EAN e marca, nao apenas pelo codigo de barras isolado.
 - Evitar imagens genericas ou erradas.
 - Sugerir imagem ao usuario antes de salvar.
 - Endpoint sugerido: `POST /products/:id/fetch-image`.
 - Interface de preview no frontend para aceitar ou recusar.
+- Salvar fonte, nivel de confianca e status de aprovacao da imagem encontrada.
+- Quando a confianca for baixa, enviar para uma fila de revisao manual.
+- Se nao houver imagem real confiavel, usar placeholder por categoria ou imagem gerada marcada como nao-real.
+
+Decisao importante:
+
+- Open Food Facts e Open Products Facts podem ser usados como fontes auxiliares, mas nao devem ser a base principal porque possuem cobertura limitada para produtos brasileiros.
+- O sistema deve construir uma base propria de enriquecimento por barcode, reaproveitando imagens e metadados aprovados entre tenants quando fizer sentido.
+- A base propria deve armazenar pelo menos: barcode, nome, marca, categoria sugerida, image_url, fonte, confianca, aprovado_em e status.
 
 ### 2. Sugestao de categoria
 
@@ -321,6 +331,13 @@ Objetivo: gerar descricoes comerciais para produtos usando nome, unidade, catego
 Prioridade: Media. Impacto: Alto.
 
 Objetivo: consultar bases externas por EAN para preencher nome oficial, marca, fabricante e imagem.
+
+Estrategia prevista:
+
+- Tentar bases abertas primeiro quando aplicavel: Open Food Facts para alimentos e Open Products Facts para nao-alimentos.
+- Complementar com busca web/IA usando `barcode + nome + marca`.
+- Avaliar APIs comerciais de barcode/GTIN para melhor cobertura nacional, se necessario.
+- Permitir enriquecimento manual pelo admin quando a automacao nao encontrar resultado confiavel.
 
 ### 5. Ofertas inteligentes
 
