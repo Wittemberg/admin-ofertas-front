@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { getOffers, createOffer, updateOffer, deleteOffer } from '../api/offers'
 import api from '../api/axios'
+import { getErrorMessage } from '../api/errors'
+import { ConfirmDialog, MessageBanner } from '../components/Feedback'
 
 const parseMoney = (value) => {
   if (value === undefined || value === null || value === '') return null
@@ -24,35 +26,44 @@ function EditModal({ offer, onClose, onSave }) {
   const [stores, setStores] = useState([])
   const [saving, setSaving] = useState(false)
   const [productSearch, setProductSearch] = useState('')
+  const [message, setMessage] = useState(null)
 
   useEffect(() => {
     api.get('/products', { params: { limit: 100 } }).then(res => {
       const data = res.data || res
       setProducts(data.products || data)
-    }).catch(console.error)
+    }).catch(err => setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar produtos') }))
+
     api.get('/stores').then(res => {
       const data = res.data || res
       setStores(data.stores || data)
-    }).catch(console.error)
+    }).catch(err => setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar filiais') }))
   }, [])
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-    (p.barcode && p.barcode.includes(productSearch))
+  const updateField = (field, value) => {
+    setForm(current => ({ ...current, [field]: value }))
+  }
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (product.barcode && product.barcode.includes(productSearch))
   )
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setMessage(null)
+
     if (!form.product_id || !form.price_to) {
-      alert('Produto e Preço Por são obrigatórios')
+      setMessage({ type: 'error', text: 'Produto e Preco Por sao obrigatorios.' })
       return
     }
+
     setSaving(true)
     try {
       const priceFrom = parseMoney(form.price_from)
       const priceTo = parseMoney(form.price_to)
       if (Number.isNaN(priceFrom) || Number.isNaN(priceTo) || priceTo <= 0) {
-        alert('Informe valores validos para os precos')
+        setMessage({ type: 'error', text: 'Informe valores validos para os precos.' })
         return
       }
 
@@ -64,115 +75,82 @@ function EditModal({ offer, onClose, onSave }) {
         starts_at: toDateIso(form.starts_at),
         ends_at: toDateIso(form.ends_at)
       }
-      let savedOffer
-      if (offer?.id) {
-        const res = await updateOffer(offer.id, payload)
-        savedOffer = res.data || res
-      } else {
-        const res = await createOffer(payload)
-        savedOffer = res.data || res
-      }
-      onSave(savedOffer)
+
+      const res = offer?.id ? await updateOffer(offer.id, payload) : await createOffer(payload)
+      onSave(res.data || res)
     } catch (err) {
-      console.error(err)
-      alert(err?.response?.data?.error || err?.response?.data?.message || 'Erro ao salvar oferta')
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao salvar oferta') })
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-bold mb-4">
-          {offer?.id ? 'Editar Oferta' : 'Nova Oferta'}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow">
+        <h2 className="text-lg font-bold text-gray-900">{offer?.id ? 'Editar oferta' : 'Nova oferta'}</h2>
+        <p className="mt-1 text-sm text-gray-500">Oferta exibida no site publico e usada no carrinho.</p>
 
-          {/* Produto */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Produto *</label>
-            <input type="text" placeholder="Buscar produto..."
+        <MessageBanner message={message} className="mt-4" />
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <Field label="Produto" required>
+            <input
+              type="text"
+              placeholder="Buscar produto por nome ou codigo..."
               value={productSearch}
-              onChange={e => setProductSearch(e.target.value)}
-              className="w-full p-2 border rounded mb-2 text-sm" />
-            <select value={form.product_id}
-              onChange={e => setForm({ ...form, product_id: e.target.value })}
-              className="w-full p-3 border rounded" required
-              size={Math.min(5, filteredProducts.length + 1)}>
+              onChange={event => setProductSearch(event.target.value)}
+              className="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+            <select
+              value={form.product_id}
+              onChange={event => updateField('product_id', event.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              required
+              size={Math.min(5, filteredProducts.length + 1)}
+            >
               <option value="">Selecione um produto</option>
-              {filteredProducts.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.name} {p.barcode ? `(${p.barcode})` : ''}
+              {filteredProducts.map(product => (
+                <option key={product.id} value={product.id}>
+                  {product.name} {product.barcode ? `(${product.barcode})` : ''}
                 </option>
               ))}
             </select>
-          </div>
+          </Field>
 
-          {/* Loja */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Loja</label>
-            <select value={form.store_id}
-              onChange={e => setForm({ ...form, store_id: e.target.value })}
-              className="w-full p-3 border rounded">
+          <Field label="Loja">
+            <select value={form.store_id} onChange={event => updateField('store_id', event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
               <option value="">Todas as lojas</option>
-              {stores.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
+              {stores.map(store => <option key={store.id} value={store.id}>{store.name}</option>)}
             </select>
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Preco De (R$)">
+              <input type="text" inputMode="decimal" placeholder="0,00" value={form.price_from} onChange={event => updateField('price_from', event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </Field>
+            <Field label="Preco Por (R$)" required>
+              <input type="text" inputMode="decimal" placeholder="0,00" required value={form.price_to} onChange={event => updateField('price_to', event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </Field>
           </div>
 
-          {/* Preços */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preço De (R$)</label>
-              <input type="text" inputMode="decimal" placeholder="0,00"
-                className="w-full p-3 border rounded"
-                value={form.price_from}
-                onChange={e => setForm({ ...form, price_from: e.target.value })} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preço Por (R$) *</label>
-              <input type="text" inputMode="decimal" placeholder="0,00" required
-                className="w-full p-3 border rounded"
-                value={form.price_to}
-                onChange={e => setForm({ ...form, price_to: e.target.value })} />
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Inicio">
+              <input type="date" value={form.starts_at} onChange={event => updateField('starts_at', event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </Field>
+            <Field label="Fim">
+              <input type="date" value={form.ends_at} onChange={event => updateField('ends_at', event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </Field>
           </div>
 
-          {/* Datas */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Início</label>
-              <input type="date"
-                className="w-full p-3 border rounded"
-                value={form.starts_at}
-                onChange={e => setForm({ ...form, starts_at: e.target.value })} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fim</label>
-              <input type="date"
-                className="w-full p-3 border rounded"
-                value={form.ends_at}
-                onChange={e => setForm({ ...form, ends_at: e.target.value })} />
-            </div>
-          </div>
-
-          {/* Destaque */}
-          <label className="flex items-center gap-2 p-3 border rounded cursor-pointer">
-            <input type="checkbox" checked={form.is_featured}
-              onChange={e => setForm({ ...form, is_featured: e.target.checked })} />
-            <span className="text-sm text-gray-600">Oferta em destaque</span>
+          <label className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700">
+            <input type="checkbox" checked={form.is_featured} onChange={event => updateField('is_featured', event.target.checked)} className="h-4 w-4 rounded border-gray-300" />
+            Oferta em destaque
           </label>
 
-          {/* Ações */}
-          <div className="flex gap-3 justify-end pt-2">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">
-              Cancelar
-            </button>
-            <button type="submit" disabled={saving}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose} className="rounded-lg border px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Cancelar</button>
+            <button type="submit" disabled={saving} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
@@ -188,6 +166,8 @@ export default function Offers() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [editingOffer, setEditingOffer] = useState(null)
+  const [pendingDelete, setPendingDelete] = useState(null)
+  const [message, setMessage] = useState(null)
   const limit = 20
 
   const fetchOffers = async () => {
@@ -197,7 +177,7 @@ export default function Offers() {
       setOffers(data.offers || [])
       setTotal(data.total || 0)
     } catch (err) {
-      console.error(err)
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar ofertas') })
     }
   }
 
@@ -205,6 +185,7 @@ export default function Offers() {
 
   const handleSave = (savedOffer) => {
     setEditingOffer(null)
+    setMessage({ type: 'success', text: 'Oferta salva com sucesso.' })
     if (savedOffer?.id) {
       setOffers(current => {
         const exists = current.some(offer => offer.id === savedOffer.id)
@@ -215,13 +196,16 @@ export default function Offers() {
     fetchOffers()
   }
 
-  const handleDelete = async (offer) => {
-    if (!confirm(`Tem certeza que deseja excluir esta oferta de "${offer.product?.name}"?`)) return
+  const handleDelete = async () => {
+    if (!pendingDelete) return
     try {
-      await deleteOffer(offer.id)
+      await deleteOffer(pendingDelete.id)
+      setMessage({ type: 'success', text: 'Oferta excluida.' })
+      setPendingDelete(null)
       fetchOffers()
-    } catch {
-      alert('Erro ao excluir oferta')
+    } catch (err) {
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao excluir oferta') })
+      setPendingDelete(null)
     }
   }
 
@@ -242,91 +226,102 @@ export default function Offers() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <a href="/" className="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">
+      <div className="mx-auto max-w-7xl">
+        <a href="/" className="mb-2 inline-block text-sm text-blue-600 hover:text-blue-800">
           &larr; Voltar ao Dashboard
         </a>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Ofertas ({total})</h1>
-          <button onClick={() => setEditingOffer({})}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold">Ofertas ({total})</h1>
+            <p className="mt-1 text-sm text-gray-500">Promocoes vigentes exibidas no site publico.</p>
+          </div>
+          <button onClick={() => setEditingOffer({})} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
             + Nova Oferta
           </button>
         </div>
 
-        <input type="text" placeholder="Buscar por produto..."
+        <input
+          type="text"
+          placeholder="Buscar por produto..."
           value={search}
-          onChange={e => { setSearch(e.target.value); setPage(1) }}
-          className="w-full p-3 border rounded-lg mb-4" />
+          onChange={event => { setSearch(event.target.value); setPage(1) }}
+          className="mb-4 w-full rounded-lg border border-gray-300 px-3 py-3"
+        />
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
+        <MessageBanner message={message} className="mb-4" />
+
+        <div className="overflow-x-auto rounded-lg bg-white shadow">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left p-3 text-sm font-medium text-gray-600">Produto</th>
-                <th className="text-left p-3 text-sm font-medium text-gray-600">Loja</th>
-                <th className="text-left p-3 text-sm font-medium text-gray-600">De</th>
-                <th className="text-left p-3 text-sm font-medium text-gray-600">Por</th>
-                <th className="text-left p-3 text-sm font-medium text-gray-600">Vigência</th>
-                <th className="text-left p-3 text-sm font-medium text-gray-600">Destaque</th>
-                <th className="text-left p-3 text-sm font-medium text-gray-600">Ações</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-600">Produto</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-600">Loja</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-600">De</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-600">Por</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-600">Vigencia</th>
+                <th className="p-3 text-left text-sm font-medium text-gray-600">Destaque</th>
+                <th className="p-3 text-right text-sm font-medium text-gray-600">Acoes</th>
               </tr>
             </thead>
             <tbody>
               {offers.map(offer => (
                 <tr key={offer.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">
-                    <div className="font-medium">{offer.product?.name}</div>
+                    <div className="font-medium text-gray-900">{offer.product?.name}</div>
                     <div className="text-xs text-gray-400">{offer.product?.barcode}</div>
                   </td>
                   <td className="p-3 text-gray-600">{offer.store?.name || 'Todas'}</td>
                   <td className="p-3 text-gray-600">{formatPrice(offer.price_from)}</td>
                   <td className="p-3 font-semibold text-green-700">{formatPrice(offer.price_to)}</td>
-                  <td className="p-3 text-sm text-gray-500">
-                    {formatDate(offer.starts_at)} — {formatDate(offer.ends_at)}
-                  </td>
+                  <td className="p-3 text-sm text-gray-500">{formatDate(offer.starts_at)} - {formatDate(offer.ends_at)}</td>
                   <td className="p-3">
                     {offer.is_featured
-                      ? <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">★ Destaque</span>
-                      : <span className="text-gray-400 text-xs">—</span>}
+                      ? <span className="rounded bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">Destaque</span>
+                      : <span className="text-xs text-gray-400">-</span>}
                   </td>
-                  <td className="p-3">
-                    <button onClick={() => setEditingOffer(offer)}
-                      className="text-blue-600 hover:text-blue-800 text-sm">
-                      Editar
-                    </button>
-                    <button onClick={() => handleDelete(offer)}
-                      className="text-red-600 hover:text-red-800 text-sm ml-2">
-                      Excluir
-                    </button>
+                  <td className="p-3 text-right">
+                    <button onClick={() => setEditingOffer(offer)} className="text-sm text-blue-600 hover:text-blue-800">Editar</button>
+                    <button onClick={() => setPendingDelete(offer)} className="ml-3 text-sm text-red-600 hover:text-red-800">Excluir</button>
                   </td>
                 </tr>
               ))}
               {offers.length === 0 && (
-                <tr><td colSpan="7" className="p-6 text-center text-gray-400">Nenhuma oferta encontrada</td></tr>
+                <tr><td colSpan="7" className="p-8 text-center text-sm text-gray-400">Nenhuma oferta encontrada.</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-4">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-              className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50">Anterior</button>
+          <div className="mt-4 flex justify-center gap-2">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="rounded-lg border bg-white px-4 py-2 disabled:opacity-50">Anterior</button>
             <span className="px-4 py-2 text-gray-600">{page} de {totalPages}</span>
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-              className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50">Próximo</button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="rounded-lg border bg-white px-4 py-2 disabled:opacity-50">Proximo</button>
           </div>
         )}
       </div>
 
-      {editingOffer !== null && (
-        <EditModal
-          offer={editingOffer?.id ? editingOffer : null}
-          onClose={() => setEditingOffer(null)}
-          onSave={handleSave}
-        />
-      )}
+      {editingOffer !== null && <EditModal offer={editingOffer?.id ? editingOffer : null} onClose={() => setEditingOffer(null)} onSave={handleSave} />}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="Excluir oferta"
+        message={`Tem certeza que deseja excluir a oferta de "${pendingDelete?.product?.name}"?`}
+        confirmLabel="Excluir"
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
+  )
+}
+
+function Field({ label, required, children }) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block font-medium text-gray-700">{label}{required ? ' *' : ''}</span>
+      {children}
+    </label>
   )
 }

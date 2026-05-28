@@ -8,6 +8,7 @@ import {
   deleteConfig,
   reloadCache
 } from '../../api/admin'
+import { ConfirmDialog } from '../../components/Feedback'
 
 const CATEGORIES = [
   { id: 'storage', label: 'Storage', icon: '💾', desc: 'S3 / MinIO' },
@@ -55,6 +56,7 @@ export default function SuperAdminConfig() {
   const [editValues, setEditValues] = useState({})
   const [visibleSecrets, setVisibleSecrets] = useState({})
   const [showCreate, setShowCreate] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState(null)
   const [newConfig, setNewConfig] = useState({
     category: 'storage',
     key: '',
@@ -137,26 +139,23 @@ export default function SuperAdminConfig() {
     }
   }
 
-  async function handleDelete(category, key) {
-    const confirmed = window.confirm(
-      `Remover ${category}.${key}? O sistema passará a usar fallback do ambiente quando existir.`
-    )
-
-    if (!confirmed) return
-
+  async function handleDelete() {
+    if (!pendingDelete) return
     try {
       setMessage(null)
-      await deleteConfig(category, key)
+      await deleteConfig(pendingDelete.category, pendingDelete.key)
       setMessage({
         type: 'success',
-        text: `${key} removido com sucesso.`
+        text: `${pendingDelete.key} removido com sucesso.`
       })
+      setPendingDelete(null)
       await loadConfigs()
     } catch (err) {
       setMessage({
         type: 'error',
         text: 'Erro ao remover: ' + (err.response?.data?.error || err.message)
       })
+      setPendingDelete(null)
     }
   }
 
@@ -626,7 +625,7 @@ export default function SuperAdminConfig() {
                         </button>
 
                         <button
-                          onClick={() => handleDelete(config.category, config.key)}
+                          onClick={() => setPendingDelete({ category: config.category, key: config.key })}
                           className="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100"
                         >
                           Remover
@@ -649,6 +648,16 @@ export default function SuperAdminConfig() {
           </p>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="Remover configuracao"
+        message={`Remover ${pendingDelete?.category}.${pendingDelete?.key}? O sistema passara a usar fallback do ambiente quando existir.`}
+        confirmLabel="Remover"
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

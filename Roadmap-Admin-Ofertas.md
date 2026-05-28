@@ -71,6 +71,9 @@ O projeto ja possui base funcional em producao, com deploy automatizado via GitH
 - Perfis basicos por usuario: admin, editor, operator e viewer.
 - Atalhos do dashboard filtrados por perfil.
 - Super Admin separado das telas operacionais do tenant.
+- Design system e checklist de auditoria visual versionados.
+- Harmonizacao visual inicial dos CRUDs antigos: produtos, ofertas, filiais, categorias, API Keys, relatorios, pedidos e atendimento.
+- Remocao de `alert()`/`confirm()` nativos das paginas do painel em favor de mensagens inline e confirmacao visual padronizada.
 
 ### Configuracoes da empresa
 

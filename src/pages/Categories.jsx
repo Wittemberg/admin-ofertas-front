@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../api/categories'
+import { getErrorMessage } from '../api/errors'
+import { ConfirmDialog, MessageBanner } from '../components/Feedback'
 
 function EditModal({ category, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -8,6 +10,7 @@ function EditModal({ category, onClose, onSave }) {
     is_active: category?.is_active ?? true
   })
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!category) {
@@ -25,6 +28,7 @@ function EditModal({ category, onClose, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
+    setError('')
     try {
       if (category?.id) {
         await updateCategory(category.id, form)
@@ -32,8 +36,8 @@ function EditModal({ category, onClose, onSave }) {
         await createCategory(form)
       }
       onSave()
-    } catch {
-      alert('Erro ao salvar categoria')
+    } catch (err) {
+      setError(getErrorMessage(err, 'Erro ao salvar categoria'))
     } finally {
       setSaving(false)
     }
@@ -45,15 +49,22 @@ function EditModal({ category, onClose, onSave }) {
         <h2 className="text-lg font-bold mb-4">
           {category ? 'Editar Categoria' : 'Nova Categoria'}
         </h2>
+        {error && <MessageBanner message={{ type: 'error', text: error }} className="mb-4" />}
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input type="text" placeholder="Nome da categoria"
-            className="w-full p-3 border rounded" required
-            value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })} />
-          <input type="text" placeholder="slug-da-categoria"
-            className="w-full p-3 border rounded" required
-            value={form.slug}
-            onChange={e => setForm({ ...form, slug: e.target.value })} />
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium text-gray-700">Nome da categoria</span>
+            <input type="text"
+              className="w-full rounded-lg border px-3 py-2" required
+              value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })} />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium text-gray-700">Slug</span>
+            <input type="text"
+              className="w-full rounded-lg border px-3 py-2" required
+              value={form.slug}
+              onChange={e => setForm({ ...form, slug: e.target.value })} />
+          </label>
           <label className="flex items-center gap-2 p-3 border rounded cursor-pointer">
             <input type="checkbox" checked={form.is_active}
               onChange={e => setForm({ ...form, is_active: e.target.checked })} />
@@ -81,6 +92,8 @@ export default function Categories() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [editingCategory, setEditingCategory] = useState(null)
+  const [message, setMessage] = useState(null)
+  const [pendingDelete, setPendingDelete] = useState(null)
   const limit = 10
 
   const fetchCategories = () => {
@@ -90,23 +103,27 @@ export default function Categories() {
         setCategories(data.categories || data)
         setTotal(data.total || data.length || 0)
       })
-      .catch(console.error)
+      .catch(err => setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar categorias') }))
   }
 
   useEffect(() => { fetchCategories() }, [page, search])
 
   const handleSave = () => {
     setEditingCategory(null)
+    setMessage({ type: 'success', text: 'Categoria salva com sucesso.' })
     fetchCategories()
   }
 
-  const handleDelete = async (cat) => {
-    if (!confirm(`Tem certeza que deseja excluir "${cat.name}"?`)) return
+  const handleDelete = async () => {
+    if (!pendingDelete) return
     try {
-      await deleteCategory(cat.id)
+      await deleteCategory(pendingDelete.id)
+      setPendingDelete(null)
+      setMessage({ type: 'success', text: 'Categoria excluida.' })
       fetchCategories()
-    } catch {
-      alert('Erro ao excluir categoria')
+    } catch (err) {
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao excluir categoria') })
+      setPendingDelete(null)
     }
   }
 
@@ -131,7 +148,9 @@ export default function Categories() {
           onChange={e => { setSearch(e.target.value); setPage(1) }}
           className="w-full p-3 border rounded-lg mb-4" />
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <MessageBanner message={message} className="mb-4" />
+
+        <div className="overflow-x-auto rounded-lg bg-white shadow">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -156,7 +175,7 @@ export default function Categories() {
                       className="text-blue-600 hover:text-blue-800 text-sm">
                       Editar
                     </button>
-                    <button onClick={() => handleDelete(cat)}
+                    <button onClick={() => setPendingDelete(cat)}
                       className="text-red-600 hover:text-red-800 text-sm ml-2">
                       Excluir
                     </button>
@@ -188,6 +207,16 @@ export default function Categories() {
           onSave={handleSave}
         />
       )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="Excluir categoria"
+        message={`Tem certeza que deseja excluir "${pendingDelete?.name}"?`}
+        confirmLabel="Excluir"
+        destructive
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

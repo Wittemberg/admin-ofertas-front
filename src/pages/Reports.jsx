@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import api from '../api/axios'
 import { getErrorMessage } from '../api/errors'
+import { MessageBanner } from '../components/Feedback'
 
 const REPORTS = [
   {
@@ -120,6 +121,7 @@ function exportToCsv(data, filename) {
 
 export default function Reports() {
   const [loading, setLoading] = useState({})
+  const [message, setMessage] = useState(null)
   const [filters, setFilters] = useState({
     date_from: '',
     date_to: '',
@@ -129,6 +131,7 @@ export default function Reports() {
 
   const handleExport = async (report) => {
     setLoading(prev => ({ ...prev, [report.key]: true }))
+    setMessage(null)
     try {
       const params = {}
       if (FILTERED_REPORTS.has(report.key)) {
@@ -145,12 +148,13 @@ export default function Reports() {
       const res = await api.get(`/reports/${report.key}`, { params })
       const data = res.data || []
       if (data.length === 0) {
-        alert('Nenhum dado encontrado para este relatorio')
+        setMessage({ type: 'warning', text: `Nenhum dado encontrado para ${report.title}.` })
         return
       }
       exportToCsv(data, report.title)
+      setMessage({ type: 'success', text: `${report.title} exportado com sucesso.` })
     } catch (err) {
-      alert(getErrorMessage(err, 'Erro ao gerar relatorio'))
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao gerar relatorio') })
     } finally {
       setLoading(prev => ({ ...prev, [report.key]: false }))
     }
@@ -172,6 +176,8 @@ export default function Reports() {
             Arquivos CSV para operacao manual, conferencia e integracao com sistemas sem API.
           </p>
         </div>
+
+        <MessageBanner message={message} className="mb-6" />
 
         <section className="mb-8 rounded-lg bg-white p-5 shadow">
           <h2 className="text-lg font-semibold">Filtros de pedidos e carrinhos</h2>

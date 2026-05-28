@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { getOrders, updateOrderStatus } from '../api/orders'
 import { getErrorMessage } from '../api/errors'
+import { MessageBanner } from '../components/Feedback'
 
 const STATUS_LABELS = {
   pending: 'Pendente',
@@ -99,6 +100,7 @@ export default function Orders() {
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState(null)
   const [selected, setSelected] = useState(null)
   const latestOrderDateRef = useRef(null)
   const initialLoadDoneRef = useRef(false)
@@ -168,18 +170,19 @@ export default function Orders() {
       const { data } = await updateOrderStatus(order.id, nextStatus)
       setOrders(current => current.map(item => item.id === order.id ? data : item))
       setSelected(current => current?.id === order.id ? data : current)
+      setMessage({ type: 'success', text: 'Status do pedido atualizado.' })
       fetchOrders()
     } catch (err) {
-      alert(getErrorMessage(err, 'Erro ao atualizar status'))
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao atualizar status') })
     }
   }
 
   const copySummary = async (order) => {
     try {
       await navigator.clipboard.writeText(buildOrderSummary(order))
-      alert('Resumo copiado')
+      setMessage({ type: 'success', text: 'Resumo copiado.' })
     } catch {
-      alert('Nao foi possivel copiar o resumo')
+      setMessage({ type: 'warning', text: 'Nao foi possivel copiar o resumo.' })
     }
   }
 
@@ -260,6 +263,8 @@ export default function Orders() {
             {error}
           </div>
         )}
+
+        <MessageBanner message={message} className="mb-4" />
 
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white px-4 py-3 text-sm shadow-sm">
           <div>

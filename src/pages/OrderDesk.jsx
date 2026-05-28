@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { getOrders, updateOrderStatus } from '../api/orders'
 import { getErrorMessage } from '../api/errors'
+import { MessageBanner } from '../components/Feedback'
 
 const STATUS_LABELS = {
   pending: 'Pendente',
@@ -85,6 +86,7 @@ export default function OrderDesk() {
   const [closingView, setClosingView] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState(null)
   const [newOrders, setNewOrders] = useState(0)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
@@ -149,18 +151,19 @@ export default function OrderDesk() {
   const changeStatus = async (order, status) => {
     try {
       await updateOrderStatus(order.id, status)
+      setMessage({ type: 'success', text: 'Status do pedido atualizado.' })
       await fetchDesk({ silent: true })
     } catch (err) {
-      alert(getErrorMessage(err, 'Erro ao atualizar status'))
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao atualizar status') })
     }
   }
 
   const copy = async (order) => {
     try {
       await navigator.clipboard.writeText(orderSummary(order))
-      alert('Resumo copiado')
+      setMessage({ type: 'success', text: 'Resumo copiado.' })
     } catch {
-      alert('Nao foi possivel copiar')
+      setMessage({ type: 'warning', text: 'Nao foi possivel copiar.' })
     }
   }
 
@@ -268,6 +271,8 @@ export default function OrderDesk() {
             {error}
           </div>
         )}
+
+        <MessageBanner message={message} className="mb-5" />
 
         {loading ? (
           <div className="rounded-lg bg-white p-10 text-center text-slate-500 shadow">Carregando atendimento...</div>
