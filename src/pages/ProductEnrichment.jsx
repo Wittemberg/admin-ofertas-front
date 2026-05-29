@@ -34,7 +34,7 @@ function sortByConfidence(items) {
   return [...items].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0))
 }
 
-function filterByImage(items, imageFilter) {
+function filterReviewByImage(items, imageFilter) {
   if (imageFilter === 'with') return items.filter(item => item.image_url)
   if (imageFilter === 'without') return items.filter(item => !item.image_url)
   return items
@@ -44,7 +44,6 @@ const PRODUCT_PAGE_SIZE = 12
 
 export default function ProductEnrichment() {
   const [products, setProducts] = useState([])
-  const [allProducts, setAllProducts] = useState([])
   const [enrichments, setEnrichments] = useState([])
   const [productSearch, setProductSearch] = useState('')
   const [productImageFilter, setProductImageFilter] = useState('without')
@@ -63,10 +62,14 @@ export default function ProductEnrichment() {
   const loadProducts = async () => {
     setLoadingProducts(true)
     try {
-      const { data } = await getProducts({ page: productPage, limit: PRODUCT_PAGE_SIZE, search: productSearch || undefined })
+      const { data } = await getProducts({
+        page: productPage,
+        limit: PRODUCT_PAGE_SIZE,
+        search: productSearch || undefined,
+        image_status: productImageFilter === 'all' ? undefined : productImageFilter
+      })
       const items = data.products || []
-      setAllProducts(items)
-      setProducts(filterByImage(items, productImageFilter))
+      setProducts(items)
       setProductTotal(data.total || items.length)
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar produtos') })
@@ -95,7 +98,7 @@ export default function ProductEnrichment() {
       const items = status === 'open'
         ? (data.items || []).filter(item => OPEN_REVIEW_STATUSES.includes(item.status))
         : (data.items || [])
-      const sortedItems = sortByConfidence(filterByImage(items, imageFilter))
+      const sortedItems = sortByConfidence(filterReviewByImage(items, imageFilter))
       setEnrichments(sortedItems)
       setEditForms(Object.fromEntries(sortedItems.map(item => [item.id, { image_url: item.image_url || '', notes: item.notes || '' }])))
     } catch (err) {
@@ -107,7 +110,13 @@ export default function ProductEnrichment() {
 
   useEffect(() => { loadProducts() }, [])
   useEffect(() => { loadProducts() }, [productPage])
-  useEffect(() => { setProducts(filterByImage(allProducts, productImageFilter)) }, [productImageFilter, allProducts])
+  useEffect(() => {
+    if (productPage !== 1) {
+      setProductPage(1)
+      return
+    }
+    loadProducts()
+  }, [productImageFilter])
   useEffect(() => { loadEnrichments() }, [status, imageFilter])
 
   const suggest = async (product) => {
