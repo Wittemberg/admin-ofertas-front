@@ -40,12 +40,16 @@ function filterByImage(items, imageFilter) {
   return items
 }
 
+const PRODUCT_PAGE_SIZE = 12
+
 export default function ProductEnrichment() {
   const [products, setProducts] = useState([])
   const [allProducts, setAllProducts] = useState([])
   const [enrichments, setEnrichments] = useState([])
   const [productSearch, setProductSearch] = useState('')
   const [productImageFilter, setProductImageFilter] = useState('without')
+  const [productPage, setProductPage] = useState(1)
+  const [productTotal, setProductTotal] = useState(0)
   const [reviewSearch, setReviewSearch] = useState('')
   const [status, setStatus] = useState('open')
   const [imageFilter, setImageFilter] = useState('all')
@@ -59,15 +63,25 @@ export default function ProductEnrichment() {
   const loadProducts = async () => {
     setLoadingProducts(true)
     try {
-      const { data } = await getProducts({ limit: 12, search: productSearch || undefined })
+      const { data } = await getProducts({ page: productPage, limit: PRODUCT_PAGE_SIZE, search: productSearch || undefined })
       const items = data.products || []
       setAllProducts(items)
       setProducts(filterByImage(items, productImageFilter))
+      setProductTotal(data.total || items.length)
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar produtos') })
     } finally {
       setLoadingProducts(false)
     }
+  }
+
+  const submitProductSearch = (event) => {
+    event.preventDefault()
+    if (productPage !== 1) {
+      setProductPage(1)
+      return
+    }
+    loadProducts()
   }
 
   const loadEnrichments = async () => {
@@ -92,6 +106,7 @@ export default function ProductEnrichment() {
   }
 
   useEffect(() => { loadProducts() }, [])
+  useEffect(() => { loadProducts() }, [productPage])
   useEffect(() => { setProducts(filterByImage(allProducts, productImageFilter)) }, [productImageFilter, allProducts])
   useEffect(() => { loadEnrichments() }, [status, imageFilter])
 
@@ -245,7 +260,7 @@ export default function ProductEnrichment() {
               <p className="mt-1 text-sm text-gray-500">Busque um produto e crie uma sugestao automatica ou manual.</p>
             </div>
             <form
-              onSubmit={event => { event.preventDefault(); loadProducts() }}
+              onSubmit={submitProductSearch}
               className="flex flex-wrap gap-2"
             >
               <input
@@ -341,6 +356,30 @@ export default function ProductEnrichment() {
               )}
             </div>
           )}
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-500">
+            <span>
+              Pagina {productPage} de {Math.max(Math.ceil(productTotal / PRODUCT_PAGE_SIZE), 1)} - {productTotal} produto{productTotal === 1 ? '' : 's'}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setProductPage(page => Math.max(page - 1, 1))}
+                disabled={productPage <= 1}
+                className="rounded-lg border px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                onClick={() => setProductPage(page => page + 1)}
+                disabled={productPage >= Math.max(Math.ceil(productTotal / PRODUCT_PAGE_SIZE), 1)}
+                className="rounded-lg border px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Proximo
+              </button>
+            </div>
+          </div>
         </section>
 
         <section className="rounded-lg bg-white p-6 shadow">
