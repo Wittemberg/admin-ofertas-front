@@ -30,6 +30,10 @@ const STATUS_CLASSES = {
 
 const OPEN_REVIEW_STATUSES = ['pending', 'suggested', 'manual']
 
+function sortByConfidence(items) {
+  return [...items].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0))
+}
+
 export default function ProductEnrichment() {
   const [products, setProducts] = useState([])
   const [enrichments, setEnrichments] = useState([])
@@ -66,8 +70,9 @@ export default function ProductEnrichment() {
       const items = status === 'open'
         ? (data.items || []).filter(item => OPEN_REVIEW_STATUSES.includes(item.status))
         : (data.items || [])
-      setEnrichments(items)
-      setEditForms(Object.fromEntries(items.map(item => [item.id, { image_url: item.image_url || '', notes: item.notes || '' }])))
+      const sortedItems = sortByConfidence(items)
+      setEnrichments(sortedItems)
+      setEditForms(Object.fromEntries(sortedItems.map(item => [item.id, { image_url: item.image_url || '', notes: item.notes || '' }])))
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar sugestoes') })
     } finally {
