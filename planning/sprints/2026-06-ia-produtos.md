@@ -118,6 +118,16 @@ Limitacoes conhecidas:
 - Busca web depende de credito/disponibilidade dos provedores configurados.
 - Imagem gerada por IA ainda nao faz parte do fluxo.
 
+## Entrega 3
+
+Implementada a primeira IA real no fluxo:
+
+- Endpoint `/products/enrichments/:enrichmentId/validate-ai`.
+- Parametros `groq_api_key`, `groq_vision_model`, `ai_validation_enabled` e `ai_validation_min_score` no Super Admin.
+- Botao `Validar com IA` na fila de revisao da tela `/produtos/ia`.
+- Parecer salvo em `raw_payload.ai_validation` com score, veredito, motivo, modelo, provedor e data.
+- A IA atua como auditor auxiliar; a aprovacao humana continua obrigatoria.
+
 ## Checklist Visual
 
 - Usar `design-system/AUDITORIA-VISUAL.md`.

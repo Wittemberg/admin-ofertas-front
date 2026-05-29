@@ -7,6 +7,7 @@ import {
   rejectProductEnrichment,
   suggestProductEnrichment,
   updateProductEnrichment,
+  validateProductEnrichmentWithAi,
   webSearchProductEnrichment
 } from '../api/products'
 import { getErrorMessage } from '../api/errors'
@@ -28,6 +29,18 @@ const STATUS_CLASSES = {
   manual: 'bg-slate-50 text-slate-700 border-slate-200'
 }
 
+const AI_VERDICT_LABELS = {
+  provavel: 'Provavel',
+  duvidoso: 'Duvidoso',
+  incorreto: 'Incorreto'
+}
+
+const AI_VERDICT_CLASSES = {
+  provavel: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  duvidoso: 'border-amber-200 bg-amber-50 text-amber-700',
+  incorreto: 'border-red-200 bg-red-50 text-red-700'
+}
+
 const OPEN_REVIEW_STATUSES = ['pending', 'suggested', 'manual']
 
 function sortByConfidence(items) {
@@ -38,6 +51,10 @@ function filterReviewByImage(items, imageFilter) {
   if (imageFilter === 'with') return items.filter(item => item.image_url)
   if (imageFilter === 'without') return items.filter(item => !item.image_url)
   return items
+}
+
+function getAiValidation(item) {
+  return item?.raw_payload?.ai_validation || null
 }
 
 const PRODUCT_PAGE_SIZE = 12
@@ -193,6 +210,32 @@ export default function ProductEnrichment() {
       await loadEnrichments()
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao atualizar sugestao') })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const validateWithAi = async (item) => {
+    setBusy(`ai-${item.id}`)
+    setMessage(null)
+    try {
+      const { data } = await validateProductEnrichmentWithAi(item.id)
+      setEnrichments(current => sortByConfidence(current.map(enrichment => (
+        enrichment.id === item.id ? data : enrichment
+      ))))
+      setEditForms(current => ({
+        ...current,
+        [data.id]: { image_url: data.image_url || '', notes: data.notes || '' }
+      }))
+      const validation = getAiValidation(data)
+      setMessage({
+        type: validation?.passed ? 'success' : 'warning',
+        text: validation
+          ? `Validacao IA: ${validation.match_score}% - ${AI_VERDICT_LABELS[validation.verdict] || validation.verdict}.`
+          : 'Validacao IA concluida.'
+      })
+    } catch (err) {
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao validar imagem com IA') })
     } finally {
       setBusy(null)
     }
@@ -431,6 +474,9 @@ export default function ProductEnrichment() {
             <div className="grid gap-4 xl:grid-cols-2">
               {enrichments.map(item => (
                 <article key={item.id} className="rounded-lg border border-gray-200 p-4">
+                  {(() => {
+                    const aiValidation = getAiValidation(item)
+                    return (
                   <div className="flex gap-4">
                     {item.image_url ? (
                       <img src={item.image_url} alt={item.product_name || item.product?.name} className="h-28 w-28 rounded-lg border object-contain" />
@@ -445,14 +491,26 @@ export default function ProductEnrichment() {
                         <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
                           {item.confidence ? `${Number(item.confidence)}%` : '0%'}
                         </span>
+                        {aiValidation && (
+                          <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${AI_VERDICT_CLASSES[aiValidation.verdict] || AI_VERDICT_CLASSES.duvidoso}`}>
+                            IA {aiValidation.match_score}% - {AI_VERDICT_LABELS[aiValidation.verdict] || aiValidation.verdict}
+                          </span>
+                        )}
                       </div>
                       <h3 className="mt-2 truncate font-semibold text-gray-900">{item.product?.name || item.product_name || 'Produto sem nome'}</h3>
                       <p className="text-xs text-gray-500">Barcode: {item.barcode || '-'}</p>
                       <p className="text-xs text-gray-500">Fonte: {item.source}</p>
                       {item.brand && <p className="text-xs text-gray-500">Marca: {item.brand}</p>}
                       {item.category_suggested && <p className="text-xs text-gray-500">Categoria sugerida: {item.category_suggested}</p>}
+                      {aiValidation && (
+                        <div className={`mt-3 rounded-lg border px-3 py-2 text-xs ${AI_VERDICT_CLASSES[aiValidation.verdict] || AI_VERDICT_CLASSES.duvidoso}`}>
+                          <strong>Auditoria IA:</strong> {aiValidation.reason}
+                        </div>
+                      )}
                     </div>
                   </div>
+                    )
+                  })()}
 
                   <div className="mt-4 grid gap-3 md:grid-cols-[1fr_160px]">
                     <input
@@ -485,6 +543,14 @@ export default function ProductEnrichment() {
                         Ver fonte
                       </a>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => validateWithAi(item)}
+                      disabled={!item.image_url || busy === `ai-${item.id}`}
+                      className="rounded-lg border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 disabled:opacity-50"
+                    >
+                      {busy === `ai-${item.id}` ? 'Validando...' : 'Validar com IA'}
+                    </button>
                     <button
                       type="button"
                       onClick={() => reject(item)}

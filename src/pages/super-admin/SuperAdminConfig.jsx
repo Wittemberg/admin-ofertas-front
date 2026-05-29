@@ -54,7 +54,11 @@ const AI_RECOMMENDED_KEYS = [
   { key: 'google_search_api_key', example: 'secreto', required: false, secret: true },
   { key: 'google_search_cx', example: 'e7cf9e6300d504838', required: false, secret: false },
   { key: 'tavily_api_key', example: 'secreto', required: false, secret: true },
-  { key: 'serpapi_api_key', example: 'secreto', required: false, secret: true }
+  { key: 'serpapi_api_key', example: 'secreto', required: false, secret: true },
+  { key: 'ai_validation_enabled', example: 'true', required: false, secret: false },
+  { key: 'ai_validation_min_score', example: '70', required: false, secret: false },
+  { key: 'groq_api_key', example: 'secreto', required: false, secret: true },
+  { key: 'groq_vision_model', example: 'meta-llama/llama-4-scout-17b-16e-instruct', required: false, secret: false }
 ]
 
 export default function SuperAdminConfig() {
@@ -456,7 +460,8 @@ export default function SuperAdminConfig() {
             </h2>
             <p className="mt-1 text-sm text-blue-800">
               Estas chaves alimentam a tela IA Produtos, criando ate 3 imagens ranqueadas
-              para aprovacao manual. A lista de scraping limita os sites consultados.
+              para aprovacao manual e permitindo auditoria visual com Groq antes da aprovacao.
+              A lista de scraping limita os sites consultados.
             </p>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">

@@ -323,6 +323,7 @@ Entregue na primeira etapa:
 - Suporte a Google Custom Search com `google_search_api_key` e `google_search_cx`.
 - Suporte a Tavily e SerpAPI como provedores de busca.
 - Top 3 imagens ranqueadas entram na fila de revisao para aprovacao manual.
+- Validacao visual com Groq Vision em sugestoes da fila, salvando score, veredito e justificativa sem aprovacao automatica.
 
 Decisao importante:
 

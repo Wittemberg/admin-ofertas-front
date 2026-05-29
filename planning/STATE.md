@@ -62,3 +62,4 @@ Sprint de IA iniciada com foco inicial em enriquecimento de produtos:
 - Tavily e SerpAPI podem gerar ate 3 sugestoes ranqueadas para revisao manual.
 - `web_scraping_sites` permite priorizar sites brasileiros cadastrados antes dos provedores externos.
 - Google Custom Search integrado como complemento configuravel por `google_search_api_key` e `google_search_cx`.
+- Groq Vision integrado como auditor visual opcional por `groq_api_key`, salvando score/veredito/motivo na sugestao sem aprovar automaticamente.

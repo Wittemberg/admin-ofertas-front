@@ -113,6 +113,7 @@ Tela de enriquecimento visual de produtos. Permite:
 - buscar ate 3 imagens ranqueadas na web usando sites cadastrados, Google Custom Search, Tavily e/ou SerpAPI;
 - cadastrar sugestao manual por URL de imagem;
 - revisar sugestoes com fonte, confianca e status;
+- validar uma sugestao com Groq Vision antes da decisao humana;
 - ajustar URL/observacao antes de aprovar;
 - aprovar imagem e aplicar no produto;
 - recusar sugestoes inadequadas.
@@ -122,6 +123,7 @@ Regras:
 - A tela e acessivel por `admin` e `editor`.
 - Nenhuma imagem e aplicada automaticamente sem aprovacao.
 - Sites de scraping e chaves Google/Tavily/SerpAPI ficam no Super Admin, categoria `ai`.
+- A chave `groq_api_key`, o modelo `groq_vision_model` e os parametros `ai_validation_enabled`/`ai_validation_min_score` tambem ficam no Super Admin, categoria `ai`.
 - Tokens de API devem ser marcados como segredo.
 - Produtos sem barcode, como pesaveis e hortifruti, usam `Buscar na web` por nome, unidade e categoria.
 - `Fontes abertas` depende de barcode.

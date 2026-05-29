@@ -8,6 +8,7 @@ export const suggestProductEnrichment = (id) => api.post(`/products/${id}/enrich
 export const webSearchProductEnrichment = (id) => api.post(`/products/${id}/enrichment/web-search`)
 export const createManualProductEnrichment = (id, data) => api.post(`/products/${id}/enrichment/manual`, data)
 export const updateProductEnrichment = (id, data) => api.put(`/products/enrichments/${id}`, data)
+export const validateProductEnrichmentWithAi = (id) => api.post(`/products/enrichments/${id}/validate-ai`)
 export const approveProductEnrichment = (id) => api.post(`/products/enrichments/${id}/approve`)
 export const rejectProductEnrichment = (id, data) => api.post(`/products/enrichments/${id}/reject`, data)
 export const uploadProductImage = async (id, file) => {
