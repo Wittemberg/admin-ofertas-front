@@ -320,6 +320,7 @@ Entregue na primeira etapa:
 - Recusar sugestao mantem produto sem alteracao.
 - Busca web configuravel por Super Admin, categoria `ai`.
 - Lista de sites brasileiros para scraping controlado por `web_scraping_sites`.
+- Suporte a Google Custom Search com `google_search_api_key` e `google_search_cx`.
 - Suporte a Tavily e SerpAPI como provedores de busca.
 - Top 3 imagens ranqueadas entram na fila de revisao para aprovacao manual.
 

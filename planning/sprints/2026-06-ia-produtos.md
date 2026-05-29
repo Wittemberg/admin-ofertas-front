@@ -103,7 +103,8 @@ Implementada a base inicial da sprint:
 Implementada a busca web ranqueada:
 
 - Categoria `ai` no Super Admin para configurar busca web.
-- Chaves `tavily_api_key` e `serpapi_api_key` como parametros secretos.
+- Chaves `google_search_api_key`, `tavily_api_key` e `serpapi_api_key` como parametros secretos.
+- Parametro `google_search_cx` para o mecanismo de pesquisa programavel.
 - Parametros `web_search_enabled`, `web_search_provider`, `web_scraping_enabled` e `web_scraping_sites`.
 - Endpoint `/products/:id/enrichment/web-search`.
 - Busca ate 3 imagens ranqueadas por similaridade com barcode, nome e dominio.

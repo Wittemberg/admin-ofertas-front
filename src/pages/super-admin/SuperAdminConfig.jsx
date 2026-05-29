@@ -51,6 +51,8 @@ const AI_RECOMMENDED_KEYS = [
   { key: 'web_search_provider', example: 'auto', required: true, secret: false },
   { key: 'web_scraping_enabled', example: 'true', required: false, secret: false },
   { key: 'web_scraping_sites', example: '[{"name":"Mercado","search_url":"https://site.com.br/busca?q={query}","enabled":true}]', required: false, secret: false },
+  { key: 'google_search_api_key', example: 'secreto', required: false, secret: true },
+  { key: 'google_search_cx', example: 'e7cf9e6300d504838', required: false, secret: false },
   { key: 'tavily_api_key', example: 'secreto', required: false, secret: true },
   { key: 'serpapi_api_key', example: 'secreto', required: false, secret: true }
 ]
@@ -486,8 +488,10 @@ export default function SuperAdminConfig() {
             <div className="mt-4 rounded-lg border border-blue-200 bg-white p-4 text-sm text-slate-700">
               <p>
                 <strong>Provedor:</strong>{' '}
-                <code className="rounded bg-slate-100 px-1 py-0.5">auto</code> usa Tavily primeiro
-                e completa com SerpAPI quando necessario. Tambem aceita{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">auto</code> usa sites cadastrados,
+                depois Google Custom Search e completa com Tavily/SerpAPI quando necessario.
+                Tambem aceita{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">google</code>,{' '}
                 <code className="rounded bg-slate-100 px-1 py-0.5">tavily</code> ou{' '}
                 <code className="rounded bg-slate-100 px-1 py-0.5">serpapi</code>.
               </p>

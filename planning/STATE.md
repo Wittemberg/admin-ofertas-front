@@ -61,3 +61,4 @@ Sprint de IA iniciada com foco inicial em enriquecimento de produtos:
 - Busca web adicionada com configuracao `ai` no Super Admin.
 - Tavily e SerpAPI podem gerar ate 3 sugestoes ranqueadas para revisao manual.
 - `web_scraping_sites` permite priorizar sites brasileiros cadastrados antes dos provedores externos.
+- Google Custom Search integrado como complemento configuravel por `google_search_api_key` e `google_search_cx`.
