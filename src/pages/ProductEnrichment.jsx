@@ -6,7 +6,8 @@ import {
   getProducts,
   rejectProductEnrichment,
   suggestProductEnrichment,
-  updateProductEnrichment
+  updateProductEnrichment,
+  webSearchProductEnrichment
 } from '../api/products'
 import { getErrorMessage } from '../api/errors'
 import { MessageBanner } from '../components/Feedback'
@@ -86,6 +87,26 @@ export default function ProductEnrichment() {
       await loadEnrichments()
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao buscar sugestao') })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const webSearch = async (product) => {
+    setBusy(`web-${product.id}`)
+    setMessage(null)
+    try {
+      const { data } = await webSearchProductEnrichment(product.id)
+      const count = (data.items || []).filter(item => item.image_url).length
+      setMessage({
+        type: count ? 'success' : 'warning',
+        text: count
+          ? `${count} sugestao${count > 1 ? 'es' : ''} da web criada${count > 1 ? 's' : ''} para revisao.`
+          : 'Nenhuma imagem encontrada na busca web. A sugestao ficou pendente.'
+      })
+      await loadEnrichments()
+    } catch (err) {
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao buscar imagens na web') })
     } finally {
       setBusy(null)
     }
@@ -231,14 +252,24 @@ export default function ProductEnrichment() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => suggest(product)}
-                    disabled={!product.barcode || busy === `suggest-${product.id}`}
-                    className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {busy === `suggest-${product.id}` ? 'Buscando...' : 'Buscar sugestao'}
-                  </button>
+                  <div className="mt-4 grid gap-2 md:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => suggest(product)}
+                      disabled={!product.barcode || busy === `suggest-${product.id}`}
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {busy === `suggest-${product.id}` ? 'Buscando...' : 'Fontes abertas'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => webSearch(product)}
+                      disabled={busy === `web-${product.id}`}
+                      className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      {busy === `web-${product.id}` ? 'Buscando...' : 'Buscar na web'}
+                    </button>
+                  </div>
 
                   <div className="mt-3 space-y-2">
                     <input

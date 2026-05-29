@@ -110,6 +110,7 @@ Tela de enriquecimento visual de produtos. Permite:
 
 - buscar produtos por nome, codigo interno ou barcode;
 - solicitar sugestao automatica por barcode;
+- buscar ate 3 imagens ranqueadas na web via Tavily/SerpAPI;
 - cadastrar sugestao manual por URL de imagem;
 - revisar sugestoes com fonte, confianca e status;
 - ajustar URL/observacao antes de aprovar;
@@ -120,6 +121,7 @@ Regras:
 
 - A tela e acessivel por `admin` e `editor`.
 - Nenhuma imagem e aplicada automaticamente sem aprovacao.
+- As chaves Tavily/SerpAPI ficam no Super Admin, categoria `ai`, marcadas como segredo.
 - Imagem real tem prioridade sobre imagem gerada.
 
 ### Filiais - `/filiais`

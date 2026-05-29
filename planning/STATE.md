@@ -58,3 +58,5 @@ Sprint de IA iniciada com foco inicial em enriquecimento de produtos:
 - Tela `/produtos/ia` para fila de revisao e aprovacao manual.
 - Fontes abertas usadas como auxiliares: Open Food Facts e Open Products Facts.
 - Base propria reaproveita enriquecimentos aprovados anteriormente pelo mesmo barcode.
+- Busca web adicionada com configuracao `ai` no Super Admin.
+- Tavily e SerpAPI podem gerar ate 3 sugestoes ranqueadas para revisao manual.

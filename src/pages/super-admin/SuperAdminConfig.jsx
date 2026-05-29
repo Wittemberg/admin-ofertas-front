@@ -14,14 +14,16 @@ const CATEGORIES = [
   { id: 'storage', label: 'Storage', icon: '💾', desc: 'S3 / MinIO' },
   { id: 'database', label: 'Database', icon: '🗄️', desc: 'PostgreSQL' },
   { id: 'geral', label: 'Geral', icon: '⚙️', desc: 'Aplicação' },
-  { id: 'email', label: 'Email', icon: '📧', desc: 'SMTP' }
+  { id: 'email', label: 'Email', icon: '📧', desc: 'SMTP' },
+  { id: 'ai', label: 'IA', icon: 'IA', desc: 'Busca web' }
 ]
 
 const CATEGORY_NAMES = {
   storage: 'Storage (S3 / MinIO)',
   database: 'Database',
   geral: 'Geral',
-  email: 'Email'
+  email: 'Email',
+  ai: 'IA / Busca Web'
 }
 
 const STORAGE_RECOMMENDED_KEYS = [
@@ -42,6 +44,13 @@ const EMAIL_RECOMMENDED_KEYS = [
   { key: 'from', example: 'Admin Ofertas <no-reply@seudominio.com.br>', required: true },
   { key: 'secure', example: 'false', required: false },
   { key: 'reset_url', example: 'https://admin-ofertas.wrtec.com.br', required: true }
+]
+
+const AI_RECOMMENDED_KEYS = [
+  { key: 'web_search_enabled', example: 'true', required: true, secret: false },
+  { key: 'web_search_provider', example: 'auto', required: true, secret: false },
+  { key: 'tavily_api_key', example: 'secreto', required: false, secret: true },
+  { key: 'serpapi_api_key', example: 'secreto', required: false, secret: true }
 ]
 
 export default function SuperAdminConfig() {
@@ -432,6 +441,54 @@ export default function SuperAdminConfig() {
                   </div>
                 )
               })}
+            </div>
+          </div>
+        ) : null}
+
+        {activeCategory === 'ai' ? (
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-5">
+            <h2 className="text-base font-semibold text-blue-900">
+              Parametros recomendados para IA e busca web
+            </h2>
+            <p className="mt-1 text-sm text-blue-800">
+              Estas chaves alimentam a tela IA Produtos, criando ate 3 imagens ranqueadas
+              para aprovacao manual.
+            </p>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {AI_RECOMMENDED_KEYS.map((item) => {
+                const exists = configs.some((config) => config.category === 'ai' && config.key === item.key)
+
+                return (
+                  <div key={item.key} className="rounded-lg border border-blue-200 bg-white p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <code className="text-sm font-semibold text-slate-900">{item.key}</code>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        exists ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {exists ? 'cadastrada' : 'pendente'}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Exemplo: <span className="font-mono">{item.example}</span>
+                    </p>
+                    <p className="mt-2 text-xs text-slate-600">
+                      {item.required ? 'Obrigatoria' : 'Opcional'}
+                      {item.secret ? ' - marcar como secreto' : ''}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="mt-4 rounded-lg border border-blue-200 bg-white p-4 text-sm text-slate-700">
+              <p>
+                <strong>Provedor:</strong>{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">auto</code> usa Tavily primeiro
+                e completa com SerpAPI quando necessario. Tambem aceita{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">tavily</code> ou{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">serpapi</code>.
+              </p>
             </div>
           </div>
         ) : null}

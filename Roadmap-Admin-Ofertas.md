@@ -306,7 +306,7 @@ Escopo previsto:
 - Buscar imagem por nome, EAN e marca, nao apenas pelo codigo de barras isolado.
 - Evitar imagens genericas ou erradas.
 - Sugerir imagem ao usuario antes de salvar.
-- Endpoint sugerido: `POST /products/:id/fetch-image`.
+- Endpoint implementado: `POST /products/:id/enrichment/web-search`.
 - Interface de preview no frontend para aceitar ou recusar.
 - Salvar fonte, nivel de confianca e status de aprovacao da imagem encontrada.
 - Quando a confianca for baixa, enviar para uma fila de revisao manual.
@@ -318,12 +318,16 @@ Entregue na primeira etapa:
 - Tela `/produtos/ia` para criar e revisar sugestoes.
 - Aprovar sugestao aplica `image_url` no produto.
 - Recusar sugestao mantem produto sem alteracao.
+- Busca web configuravel por Super Admin, categoria `ai`.
+- Suporte a Tavily e SerpAPI como provedores de busca.
+- Top 3 imagens ranqueadas entram na fila de revisao para aprovacao manual.
 
 Decisao importante:
 
 - Open Food Facts e Open Products Facts podem ser usados como fontes auxiliares, mas nao devem ser a base principal porque possuem cobertura limitada para produtos brasileiros.
 - O sistema deve construir uma base propria de enriquecimento por barcode, reaproveitando imagens e metadados aprovados entre tenants quando fizer sentido.
 - A base propria deve armazenar pelo menos: barcode, nome, marca, categoria sugerida, image_url, fonte, confianca, aprovado_em e status.
+- Tokens de provedores externos devem ficar em `system_configs` como segredo, nunca no codigo.
 
 ### 2. Sugestao de categoria
 
