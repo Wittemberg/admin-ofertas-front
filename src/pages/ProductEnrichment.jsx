@@ -34,12 +34,19 @@ function sortByConfidence(items) {
   return [...items].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0))
 }
 
+function filterByImage(items, imageFilter) {
+  if (imageFilter === 'with') return items.filter(item => item.image_url)
+  if (imageFilter === 'without') return items.filter(item => !item.image_url)
+  return items
+}
+
 export default function ProductEnrichment() {
   const [products, setProducts] = useState([])
   const [enrichments, setEnrichments] = useState([])
   const [productSearch, setProductSearch] = useState('')
   const [reviewSearch, setReviewSearch] = useState('')
   const [status, setStatus] = useState('open')
+  const [imageFilter, setImageFilter] = useState('all')
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [loadingReview, setLoadingReview] = useState(false)
   const [busy, setBusy] = useState(null)
@@ -70,7 +77,7 @@ export default function ProductEnrichment() {
       const items = status === 'open'
         ? (data.items || []).filter(item => OPEN_REVIEW_STATUSES.includes(item.status))
         : (data.items || [])
-      const sortedItems = sortByConfidence(items)
+      const sortedItems = sortByConfidence(filterByImage(items, imageFilter))
       setEnrichments(sortedItems)
       setEditForms(Object.fromEntries(sortedItems.map(item => [item.id, { image_url: item.image_url || '', notes: item.notes || '' }])))
     } catch (err) {
@@ -81,7 +88,7 @@ export default function ProductEnrichment() {
   }
 
   useEffect(() => { loadProducts() }, [])
-  useEffect(() => { loadEnrichments() }, [status])
+  useEffect(() => { loadEnrichments() }, [status, imageFilter])
 
   const suggest = async (product) => {
     setBusy(`suggest-${product.id}`)
@@ -338,6 +345,11 @@ export default function ProductEnrichment() {
                 {Object.entries(STATUS_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
+              </select>
+              <select value={imageFilter} onChange={event => setImageFilter(event.target.value)} className="rounded-lg border px-3 py-2 text-sm">
+                <option value="all">Todas imagens</option>
+                <option value="with">Com imagem</option>
+                <option value="without">Sem imagem</option>
               </select>
               <input
                 value={reviewSearch}
