@@ -215,7 +215,7 @@ export default function ProductEnrichment() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">IA Produtos</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Enriquecimento visual por barcode, nome e marca. Nada e publicado sem aprovacao.
+            Enriquecimento visual por barcode, nome, unidade e categoria. Nada e publicado sem aprovacao.
           </p>
         </div>
 
@@ -258,9 +258,17 @@ export default function ProductEnrichment() {
                     <div className="min-w-0">
                       <h3 className="truncate font-semibold text-gray-900">{product.name}</h3>
                       <p className="text-xs text-gray-500">{product.barcode || 'Sem barcode'}</p>
-                      <p className="text-xs text-gray-400">{product.internal_code || '-'}</p>
+                      <p className="text-xs text-gray-400">
+                        {[product.internal_code, product.unit, product.category?.name].filter(Boolean).join(' - ') || '-'}
+                      </p>
                     </div>
                   </div>
+
+                  {!product.barcode && (
+                    <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                      Produto sem barcode: use Buscar na web por nome, unidade e categoria.
+                    </div>
+                  )}
 
                   <div className="mt-4 grid gap-2 md:grid-cols-2">
                     <button
@@ -268,8 +276,9 @@ export default function ProductEnrichment() {
                       onClick={() => suggest(product)}
                       disabled={!product.barcode || busy === `suggest-${product.id}`}
                       className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                      title={!product.barcode ? 'Fontes abertas exigem codigo de barras.' : undefined}
                     >
-                      {busy === `suggest-${product.id}` ? 'Buscando...' : 'Fontes abertas'}
+                      {busy === `suggest-${product.id}` ? 'Buscando...' : product.barcode ? 'Fontes abertas' : 'Requer barcode'}
                     </button>
                     <button
                       type="button"

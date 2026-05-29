@@ -123,6 +123,8 @@ Regras:
 - Nenhuma imagem e aplicada automaticamente sem aprovacao.
 - Sites de scraping e chaves Google/Tavily/SerpAPI ficam no Super Admin, categoria `ai`.
 - Tokens de API devem ser marcados como segredo.
+- Produtos sem barcode, como pesaveis e hortifruti, usam `Buscar na web` por nome, unidade e categoria.
+- `Fontes abertas` depende de barcode.
 - Imagem real tem prioridade sobre imagem gerada.
 
 ### Filiais - `/filiais`

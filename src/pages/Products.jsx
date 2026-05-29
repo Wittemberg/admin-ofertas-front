@@ -93,7 +93,7 @@ function EditModal({ product, onClose, onSave }) {
               <input value={form.internal_code} onChange={event => updateField('internal_code', event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
             </Field>
             <Field label="Codigo de barras">
-              <input value={form.barcode} onChange={event => updateField('barcode', event.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+              <input value={form.barcode} onChange={event => updateField('barcode', event.target.value)} placeholder="Opcional para produtos pesaveis" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
             </Field>
           </div>
 
