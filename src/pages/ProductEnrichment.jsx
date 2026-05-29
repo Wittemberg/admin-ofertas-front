@@ -42,8 +42,10 @@ function filterByImage(items, imageFilter) {
 
 export default function ProductEnrichment() {
   const [products, setProducts] = useState([])
+  const [allProducts, setAllProducts] = useState([])
   const [enrichments, setEnrichments] = useState([])
   const [productSearch, setProductSearch] = useState('')
+  const [productImageFilter, setProductImageFilter] = useState('without')
   const [reviewSearch, setReviewSearch] = useState('')
   const [status, setStatus] = useState('open')
   const [imageFilter, setImageFilter] = useState('all')
@@ -58,7 +60,9 @@ export default function ProductEnrichment() {
     setLoadingProducts(true)
     try {
       const { data } = await getProducts({ limit: 12, search: productSearch || undefined })
-      setProducts(data.products || [])
+      const items = data.products || []
+      setAllProducts(items)
+      setProducts(filterByImage(items, productImageFilter))
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar produtos') })
     } finally {
@@ -88,6 +92,7 @@ export default function ProductEnrichment() {
   }
 
   useEffect(() => { loadProducts() }, [])
+  useEffect(() => { setProducts(filterByImage(allProducts, productImageFilter)) }, [productImageFilter, allProducts])
   useEffect(() => { loadEnrichments() }, [status, imageFilter])
 
   const suggest = async (product) => {
@@ -249,6 +254,15 @@ export default function ProductEnrichment() {
                 placeholder="Produto, codigo ou barcode..."
                 className="w-72 rounded-lg border px-3 py-2 text-sm"
               />
+              <select
+                value={productImageFilter}
+                onChange={event => setProductImageFilter(event.target.value)}
+                className="rounded-lg border px-3 py-2 text-sm"
+              >
+                <option value="without">Sem imagem</option>
+                <option value="with">Com imagem</option>
+                <option value="all">Todos</option>
+              </select>
               <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
                 Buscar
               </button>
