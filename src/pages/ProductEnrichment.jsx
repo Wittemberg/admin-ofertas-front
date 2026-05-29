@@ -14,19 +14,19 @@ import { getErrorMessage } from '../api/errors'
 import { MessageBanner } from '../components/Feedback'
 
 const STATUS_LABELS = {
-  pending: 'Pendente',
-  suggested: 'Sugerido',
+  pending: 'Aguardando revisao',
+  suggested: 'Aguardando revisao',
   approved: 'Aprovado',
   rejected: 'Recusado',
-  manual: 'Manual'
+  manual: 'Aguardando revisao'
 }
 
 const STATUS_CLASSES = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
-  suggested: 'bg-blue-50 text-blue-700 border-blue-200',
+  suggested: 'bg-amber-50 text-amber-700 border-amber-200',
   approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   rejected: 'bg-red-50 text-red-700 border-red-200',
-  manual: 'bg-slate-50 text-slate-700 border-slate-200'
+  manual: 'bg-amber-50 text-amber-700 border-amber-200'
 }
 
 const AI_VERDICT_LABELS = {
@@ -42,6 +42,12 @@ const AI_VERDICT_CLASSES = {
 }
 
 const OPEN_REVIEW_STATUSES = ['pending', 'suggested', 'manual']
+const REVIEW_FILTER_OPTIONS = [
+  { value: 'open', label: 'Aguardando revisao' },
+  { value: 'approved', label: 'Aprovadas' },
+  { value: 'rejected', label: 'Recusadas' },
+  { value: '', label: 'Todas' }
+]
 
 function sortByConfidence(items) {
   return [...items].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0))
@@ -445,9 +451,7 @@ export default function ProductEnrichment() {
               className="flex flex-wrap gap-2"
             >
               <select value={status} onChange={event => setStatus(event.target.value)} className="rounded-lg border px-3 py-2 text-sm">
-                <option value="open">Em aberto</option>
-                <option value="">Todos</option>
-                {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                {REVIEW_FILTER_OPTIONS.map(({ value, label }) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>

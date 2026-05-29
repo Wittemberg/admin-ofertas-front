@@ -122,6 +122,7 @@ Regras:
 
 - A tela e acessivel por `admin` e `editor`.
 - Nenhuma imagem e aplicada automaticamente sem aprovacao.
+- Os status tecnicos `pending`, `suggested` e `manual` aparecem para o usuario como `Aguardando revisao`, simplificando a fila.
 - Sites de scraping e chaves Google/Tavily/SerpAPI ficam no Super Admin, categoria `ai`.
 - A chave `groq_api_key`, o modelo `groq_vision_model` e os parametros `ai_validation_enabled`/`ai_validation_min_score` tambem ficam no Super Admin, categoria `ai`.
 - Tokens de API devem ser marcados como segredo.
