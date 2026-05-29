@@ -28,12 +28,14 @@ const STATUS_CLASSES = {
   manual: 'bg-slate-50 text-slate-700 border-slate-200'
 }
 
+const OPEN_REVIEW_STATUSES = ['pending', 'suggested', 'manual']
+
 export default function ProductEnrichment() {
   const [products, setProducts] = useState([])
   const [enrichments, setEnrichments] = useState([])
   const [productSearch, setProductSearch] = useState('')
   const [reviewSearch, setReviewSearch] = useState('')
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState('open')
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [loadingReview, setLoadingReview] = useState(false)
   const [busy, setBusy] = useState(null)
@@ -59,10 +61,13 @@ export default function ProductEnrichment() {
       const { data } = await getProductEnrichments({
         limit: 30,
         search: reviewSearch || undefined,
-        status: status || undefined
+        status: status && status !== 'open' ? status : undefined
       })
-      setEnrichments(data.items || [])
-      setEditForms(Object.fromEntries((data.items || []).map(item => [item.id, { image_url: item.image_url || '', notes: item.notes || '' }])))
+      const items = status === 'open'
+        ? (data.items || []).filter(item => OPEN_REVIEW_STATUSES.includes(item.status))
+        : (data.items || [])
+      setEnrichments(items)
+      setEditForms(Object.fromEntries(items.map(item => [item.id, { image_url: item.image_url || '', notes: item.notes || '' }])))
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao carregar sugestoes') })
     } finally {
@@ -172,8 +177,13 @@ export default function ProductEnrichment() {
     try {
       const form = editForms[item.id] || {}
       await rejectProductEnrichment(item.id, { notes: form.notes })
+      setEnrichments(current => current.filter(enrichment => enrichment.id !== item.id))
+      setEditForms(current => {
+        const next = { ...current }
+        delete next[item.id]
+        return next
+      })
       setMessage({ type: 'success', text: 'Sugestao recusada.' })
-      await loadEnrichments()
     } catch (err) {
       setMessage({ type: 'error', text: getErrorMessage(err, 'Erro ao recusar sugestao') })
     } finally {
@@ -309,6 +319,7 @@ export default function ProductEnrichment() {
               className="flex flex-wrap gap-2"
             >
               <select value={status} onChange={event => setStatus(event.target.value)} className="rounded-lg border px-3 py-2 text-sm">
+                <option value="open">Em aberto</option>
                 <option value="">Todos</option>
                 {Object.entries(STATUS_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
