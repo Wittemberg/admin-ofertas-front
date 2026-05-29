@@ -60,3 +60,4 @@ Sprint de IA iniciada com foco inicial em enriquecimento de produtos:
 - Base propria reaproveita enriquecimentos aprovados anteriormente pelo mesmo barcode.
 - Busca web adicionada com configuracao `ai` no Super Admin.
 - Tavily e SerpAPI podem gerar ate 3 sugestoes ranqueadas para revisao manual.
+- `web_scraping_sites` permite priorizar sites brasileiros cadastrados antes dos provedores externos.

@@ -49,6 +49,8 @@ const EMAIL_RECOMMENDED_KEYS = [
 const AI_RECOMMENDED_KEYS = [
   { key: 'web_search_enabled', example: 'true', required: true, secret: false },
   { key: 'web_search_provider', example: 'auto', required: true, secret: false },
+  { key: 'web_scraping_enabled', example: 'true', required: false, secret: false },
+  { key: 'web_scraping_sites', example: '[{"name":"Mercado","search_url":"https://site.com.br/busca?q={query}","enabled":true}]', required: false, secret: false },
   { key: 'tavily_api_key', example: 'secreto', required: false, secret: true },
   { key: 'serpapi_api_key', example: 'secreto', required: false, secret: true }
 ]
@@ -452,7 +454,7 @@ export default function SuperAdminConfig() {
             </h2>
             <p className="mt-1 text-sm text-blue-800">
               Estas chaves alimentam a tela IA Produtos, criando ate 3 imagens ranqueadas
-              para aprovacao manual.
+              para aprovacao manual. A lista de scraping limita os sites consultados.
             </p>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -489,6 +491,23 @@ export default function SuperAdminConfig() {
                 <code className="rounded bg-slate-100 px-1 py-0.5">tavily</code> ou{' '}
                 <code className="rounded bg-slate-100 px-1 py-0.5">serpapi</code>.
               </p>
+              <p className="mt-3">
+                <strong>Lista de sites:</strong>{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">web_scraping_sites</code>{' '}
+                aceita JSON com objetos contendo <code className="rounded bg-slate-100 px-1 py-0.5">name</code>,{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">search_url</code> e{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">enabled</code>. Use{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">{'{query}'}</code>,{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">{'{barcode}'}</code> ou{' '}
+                <code className="rounded bg-slate-100 px-1 py-0.5">{'{name}'}</code> na URL.
+              </p>
+              <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">{`[
+  {
+    "name": "Exemplo Mercado",
+    "search_url": "https://www.exemplo.com.br/busca?q={query}",
+    "enabled": true
+  }
+]`}</pre>
             </div>
           </div>
         ) : null}
@@ -642,23 +661,37 @@ export default function SuperAdminConfig() {
                         ) : null}
 
                         <div className="flex flex-col gap-2 md:flex-row">
-                          <input
-                            type={
-                              config.is_secret && !isSecretVisible ? 'password' : 'text'
-                            }
-                            value={editValues[stateKey] || ''}
-                            onChange={(e) =>
-                              setEditValues((prev) => ({
-                                ...prev,
-                                [stateKey]: e.target.value
-                              }))
-                            }
-                            className={`w-full rounded-lg border px-3 py-2 text-sm font-mono ${
-                              config.is_secret
-                                ? 'border-slate-300 bg-slate-50'
-                                : 'border-slate-300 bg-white'
-                            }`}
-                          />
+                          {config.category === 'ai' && config.key === 'web_scraping_sites' ? (
+                            <textarea
+                              value={editValues[stateKey] || ''}
+                              onChange={(e) =>
+                                setEditValues((prev) => ({
+                                  ...prev,
+                                  [stateKey]: e.target.value
+                                }))
+                              }
+                              rows="8"
+                              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-mono"
+                            />
+                          ) : (
+                            <input
+                              type={
+                                config.is_secret && !isSecretVisible ? 'password' : 'text'
+                              }
+                              value={editValues[stateKey] || ''}
+                              onChange={(e) =>
+                                setEditValues((prev) => ({
+                                  ...prev,
+                                  [stateKey]: e.target.value
+                                }))
+                              }
+                              className={`w-full rounded-lg border px-3 py-2 text-sm font-mono ${
+                                config.is_secret
+                                  ? 'border-slate-300 bg-slate-50'
+                                  : 'border-slate-300 bg-white'
+                              }`}
+                            />
+                          )}
 
                           {config.is_secret ? (
                             <button

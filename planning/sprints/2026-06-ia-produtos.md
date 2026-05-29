@@ -104,9 +104,10 @@ Implementada a busca web ranqueada:
 
 - Categoria `ai` no Super Admin para configurar busca web.
 - Chaves `tavily_api_key` e `serpapi_api_key` como parametros secretos.
-- Parametros `web_search_enabled` e `web_search_provider`.
+- Parametros `web_search_enabled`, `web_search_provider`, `web_scraping_enabled` e `web_scraping_sites`.
 - Endpoint `/products/:id/enrichment/web-search`.
 - Busca ate 3 imagens ranqueadas por similaridade com barcode, nome e dominio.
+- Scraping restrito a lista de sites configurada no Super Admin.
 - Tela `/produtos/ia` com acao `Buscar na web`.
 - Sugestoes entram na fila normal de revisao, sem publicacao automatica.
 
